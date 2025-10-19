@@ -21,7 +21,9 @@ The officially labeled wallets were obtained from this link, under the "Account 
 
 <img width="1014" height="546" alt="image" src="https://github.com/user-attachments/assets/d500cf66-0926-4fd6-b88a-a1faf1fa2a19" />
 
+
 *Note: I use my own Algorand node on my VPS for both scripts to not take advantage of Nodely's free API consistently, and avoid potential rate limiting.*
+
 
 ## `tweet_af_holdings_summary.py`: USDC Value Logic, Fetching Account balances, OAuth1 & API Keys, Tweet Content Compilation
 
