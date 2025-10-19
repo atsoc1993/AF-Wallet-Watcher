@@ -191,6 +191,7 @@ while True:
                     tweet(tx_id=tx_id, sender=sender, receiver=receiver, asset=asset, amount=amount, unknown_activity=unknown_activity, tx_type=type)
             previous_round = next_round
             time.sleep(2)
+        time.sleep(1)
     except Exception as e:
         if 'txns' not in str(e):
             print(e)
