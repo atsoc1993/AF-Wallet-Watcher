@@ -155,8 +155,7 @@ We iterate through the array, and set a flag for `found_AF_tx` to False. We use 
 
 There are various ways to deconstruct transaction information and crawl them, and to each their own, but it's just important to note that different transaction types contain different keys.
 
-For example a payment transaction may or may not have a `rcv` (receiver) field depending on the exact usage (rekey, lease to, & close to can be used instead), and an asset transfer will have an `arcv` field (asset receiver) instead of `rcv`. A payment transaction
-will have an `xaid` field whereas a payment transaction will not, a payment transaction will have an `amt` (amount) field (if not 0) whereas an asset transfer transaction will have an `aamt` (asset amount) field if not 0, so on and so forth.
+For example a payment transaction may or may not have a `rcv` (receiver) field depending on the exact usage (rekey, lease to, & close to can be used instead), and an asset transfer will have an `arcv` field (asset receiver) instead of `rcv`. An asset transfer transaction will have an `xaid` field whereas a payment transaction will not, a payment transaction will have an `amt` (amount) field (if not 0) whereas an asset transfer transaction will have an `aamt` (asset amount) field if not 0, so on and so forth.
 
 The main purpose is to check each transaction to see if we have an AF labeled wallet in the `snd`, `arcv`, or `rcv` field, the transaction's type, and ensure that whatever the scenario, we have the associated information with that transaction. Should we find
 any transaction that involves an AF wallet, we set the `found_AF_tx` flag to True, and pass the information about the transaction to the `tweet` method.
