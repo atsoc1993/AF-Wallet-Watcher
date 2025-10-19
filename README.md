@@ -232,6 +232,7 @@ def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_ty
 
 ```
 We determine if the message needs to be catered for a Market Operations event to be careful with wording:
+```
     . . .
     
     sender_is_mops = sender_is_af and "Market Operations" in sender_label
