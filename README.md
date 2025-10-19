@@ -67,7 +67,7 @@ asset_2_reserves = local_states.get('asset_2_reserves').value
 algorand_price = asset_1_reserves / asset_2_reserves
 ```
 
-Once the current price of Algo is obtained taking decimals into account, we can now loop through all officially labeled foundation address and fetch their balances, while simultaneously preparing a formatted tweet message:
+Once the current price of Algo is obtained taking decimals into account, we can now loop through all officially labeled foundation address' and fetch their balances, while simultaneously preparing a formatted tweet message:
 
 ```    
   algorand_price = getAlgoPrice()
