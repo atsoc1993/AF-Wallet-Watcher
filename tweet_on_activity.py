@@ -102,7 +102,7 @@ def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_ty
     if asset == 470842789: #Ignore Defly airdrops
         return
     
-    if unknown_activity:
+    if unknown_activity and type != 'keyreg':
         tweet_text = f"Foundation Wallet Activity:\n {sender_label or sender} ({sender}) performed an uncrawled application call or key registration transaction."
         
 
