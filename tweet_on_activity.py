@@ -110,7 +110,7 @@ def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_ty
         algo_balance = algorand.client.algod.account_info(sender)['amount'] / 10**6
         tweet_text = f"{sender_label} renewed participation keys or removed {algo_balance:,.0f} Algorand from online stake!"
 
-    elif sender == receiver:
+    elif sender == receiver and asset:
         tweet_text = f'{sender_label} opted into {asset_name}'
 
     elif sender_is_mops and not receiver_is_mops:
