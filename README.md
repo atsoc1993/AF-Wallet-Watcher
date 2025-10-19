@@ -29,9 +29,7 @@ The officially labeled wallets were obtained from this link, under the "Account 
 
 ## `tweet_af_holdings_summary.py`: USDC Value Logic, Fetching Account balances, OAuth1 & API Keys, Tweet Content Compilation
 
-To get the equivalent USDC value when tweeting a balance summary in `tweet_af_holdings_summary.py`:
-
-- Compute the Logic Sig Account for the pool address for USDC/ALGO on Tinyman by inserting the tinyman router application ID, asset A & asset B id's into the program bytes of the logic sig template provided by Tinyman for all pool address'.
+To get the equivalent USDC value when tweeting a balance summary in `tweet_af_holdings_summary.py`, we compute the Logic Sig Account for the pool address for USDC/ALGO on Tinyman by inserting the tinyman router application ID, asset A & asset B id's into the program bytes of the logic sig template provided by Tinyman for all pool address'.
 
 ```
     POOL_LOGICSIG_TEMPLATE = (
