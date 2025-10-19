@@ -114,7 +114,7 @@ if resp.status_code != 201:
 print("Tweeted:", tweet_text)
 ```
 
-The script uses a while loop that with a 7-day long sleep function to schedule balance summary tweets, these go out on Sunday's.
+The script uses a while loop that uses a 7-day long sleep function to schedule balance summary tweets weekly, these go out on Sunday's.
 ```while True:
     balance_summary_tweet()
     time.sleep(604_800)
