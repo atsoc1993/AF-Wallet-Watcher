@@ -123,11 +123,12 @@ The script uses a while loop that uses a 7-day long sleep function to schedule b
 
 The script begins with setting the previous round cursor to 0, where we then initiate a while loop (with try except clauses) that checks if the next round has passed (next block has been confirmed and a new mem pool is forming for the subsequent round).
 
-If we now have a new, complete block to crawl, we trigger the if logic, with resets the AlgorandClient object to avoid any errors that may arise from a stale client or hanging network connection to the VPS where the node is hosted.
+If we now have a new, complete block to crawl, we trigger the if logic, which resets the AlgorandClient object to avoid any errors that may arise from a stale client or hanging network connection to the VPS where the node is hosted.
 
 If the next round has not been confirmed yet, then we simply sleep for 1 second to avoid spamming the node with unnecessary requests, since we have 2.8~ seconds on average per round completion.
 
-```previous_round = 0
+```
+previous_round = 0
 
 algorand = AlgorandClient(config=config)
 
