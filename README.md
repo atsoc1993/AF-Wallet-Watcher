@@ -145,7 +145,7 @@ while True:
 
 Once the `if` logic triggers, the code executes— we will get into the `tweet` functions' logic afterwards.
 
-This code block gets all transaction ID's from the recently proposed block and the block information, and zips these blobs of data to map each transaction ID to transaction information.
+The following code block gets all transaction ID's from the recently proposed block and the block information, and zips these blobs of data to map each transaction ID to transaction information.
 
 Initially, I was getting individual transaction info for each transaction ID, but noticed that transaction ID's & block info map 1:1, and the block info method was far more efficient.
 
