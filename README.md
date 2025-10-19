@@ -246,7 +246,7 @@ We determine if the message needs to be catered for a Market Operations event to
 
 We determine the asset name involved, if any, where 0 represents Algo, which uses 6 decimal points for units.
 If not Algo, we get the asset's information to get it's name & decimal-conscious quantity.
-One of the Treasury address' contains Defly tokens, so we don't tweet if it's an airdrop as these are somewhat arbitrary non-important announcements to make:
+One of the Treasury address' contains Defly tokens, so we don't tweet if it's an airdrop as these are somewhat arbitrary, non-important announcements to make:
 
 ```
     if asset == 0:
