@@ -52,7 +52,7 @@ To get the equivalent USDC value when tweeting a balance summary in `tweet_af_ho
         return LogicSigAccount(program)
 ```
 
-Once the pool address is determined, we extract the address from the LogicSigAccount object, and fetch the local states of the pool address against the Tinyman router. The local states needed for price calculationare `asset_1_reserves` and `asset_2_reserves`.
+Once the pool address is determined, we extract the address from the LogicSigAccount object, and fetch the local states of the pool address against the Tinyman router. The only local states needed for price calculation are `asset_1_reserves` and `asset_2_reserves`.
 
 We simply take the quotient of `asset_1_reserves` over `asset_2_reserves`:
 
