@@ -4,7 +4,9 @@ The two files included, `tweet_on_activity.py` and `tweet_af_holdings_summary.py
 - Send an X post when a transaction is detected from or to any of the officially labeled wallets owned by the Algorand Foundation
 - Tweet an Algo balance summary (and the respective USDC value at that time) for all officially labeled Algorand Foundation wallets
 
+
 The officially labeled wallets are contained in a map in both files:
+
 ```
 foundation_market_wallets = {
     'KEU3FQHJ5CVO7DC5OJKHR74Z6M3X26O4IZYHHAIV6T7SLYHJJG32LCHICQ': 'Foundation: Treasury 1',
