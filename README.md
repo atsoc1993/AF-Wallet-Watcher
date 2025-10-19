@@ -33,7 +33,8 @@ To get the equivalent USDC value when tweeting a balance summary in `tweet_af_ho
 
 - Compute the Logic Sig Account for the pool address for USDC/ALGO on Tinyman by inserting the tinyman router application ID, asset A & asset B id's into the program bytes of the logic sig template provided by Tinyman for all pool address'.
 
-```    POOL_LOGICSIG_TEMPLATE = (
+```
+    POOL_LOGICSIG_TEMPLATE = (
         "BoAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgQBbNQA0ADEYEkQxGYEBEkSBAUM="
     )
 
