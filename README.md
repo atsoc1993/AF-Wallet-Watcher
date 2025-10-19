@@ -1,7 +1,7 @@
 ## Summary
 
 The two files included, `tweet_on_activity.py` and `tweet_af_holdings_summary.py`, contain the logic necessary to, respectively:
-- send an X post when a transaction is detected from or to any of the officially labeled wallets owned by the Algorand Foundation
+- Send an X post when a transaction is detected from or to any of the officially labeled wallets owned by the Algorand Foundation
 - Tweet an Algo balance summary (and the respective USDC value at that time) for all officially labeled Algorand Foundation wallets
 
 The officially labeled wallets are contained in a map in both files:
