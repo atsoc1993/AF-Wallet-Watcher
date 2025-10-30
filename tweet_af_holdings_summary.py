@@ -74,6 +74,7 @@ foundation_market_wallets = {
     '4E7OINW7M6G6OT2SQZ7ZKFPWJ7CAAFTPOG2RZISJ3YZU5VCJQ64ZIROC44': 'Unlabeled Foundation Wallet',
 }
 
+
 def getAlgoPrice():
 
     algorand = AlgorandClient.mainnet()
@@ -125,16 +126,76 @@ def balance_summary_tweet():
     total_value = 0
     algorand = AlgorandClient.mainnet()
     decimals_scale = 10**6
-    for key, value in foundation_market_wallets.items():
-        algo_balance = algorand.client.algod.account_info(key)['amount'] / decimals_scale
+    balances = []
+    total_algo = 0.0
+    total_value = 0.0
+
+    for addr, label in foundation_market_wallets.items():
+        info = algorand.account.get_information(addr)
+        algo_balance = info.amount.micro_algo / decimals_scale
         dollar_value = algo_balance * algorand_price
-        balances_text += f'{value} \nValue: {algo_balance:,.2f}A | ${dollar_value:,.2f}\n\n'
+        online = True if info.participation else False
+        incentives = True if info.incentive_eligible else False
+        balances.append((algo_balance, dollar_value, label, online, incentives))
         total_algo += algo_balance
         total_value += dollar_value
 
-    
-    total_value_text = f'Foundation Wallet Weekly Summary: \n\nTotal Remaining Foundation Funds: {total_algo:,.2f}A | ${total_value:,.2f}\n\n'
+    balances.sort(key=lambda x: x[0], reverse=True)
 
+    current_round = algorand.client.algod.status()['last-round']
+    indexer = AlgorandClient.mainnet().client.indexer
+    fee_sink = 'Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA'
+    round_time_window = int((60 * 60 * 24 * 7) // 2.8) # blocks for last 7 weeks~
+
+    balances_text = ""
+    for algo_balance, dollar_value, label, online, incentives in balances:
+        incentives_string = ''
+        online_string = ''
+
+        rewards_earned = 0
+        if incentives:
+            next_page = None
+            next_page_available = True
+
+            for address in foundation_market_wallets.keys():
+                if foundation_market_wallets[address] == label:
+                    account = address
+
+            while next_page_available:
+                payout_txs = indexer.search_transactions_by_address(
+                    address=account,
+                    txn_type='pay',
+                    min_round=current_round - round_time_window,
+                    max_round=current_round,
+                    next_page=next_page,
+                    limit=10000
+                )
+
+                for tx in payout_txs.get('transactions', []):
+                    pay_tx = tx.get('payment-transaction', {})
+                    sender = tx.get('sender', '')
+                    receiver = pay_tx.get('receiver', '')
+                    amount = pay_tx.get('amount')
+                    if sender == fee_sink and receiver == account:
+                        rewards_earned += amount 
+
+
+                next_page = payout_txs.get('next-token', None)
+                if not next_page:
+                    print(f'No next page')
+                    next_page_available=False
+                else:
+                    print(f'Has next page')
+
+            incentives_string = f'\nOpted Into Incentives: Yes\nRewards Earned (last 7 days): {(rewards_earned / decimals_scale):,.2f}A | ${((rewards_earned / decimals_scale)* algorand_price):,.2f}'
+        if online:
+            online_string = f'Online: Yes'
+        balances_text += f"{label} \nValue: {algo_balance:,.2f}A | ${dollar_value:,.2f}\n{online_string}{incentives_string}\n\n"
+
+    total_value_text = (
+        f"Foundation Wallet Weekly Summary: \n\n"
+        f"Total Remaining Foundation Funds: {total_algo:,.2f}A | ${total_value:,.2f}\n\n"
+    )
     tweet_text = total_value_text + balances_text
     tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
     payload = {"text": tweet_text}
