@@ -161,6 +161,10 @@ while True:
                 found_AF_tx = False
                 sender = txn_info.get('snd', None)
                 type = txn_info['type']
+                receiver = None
+                asset = None
+                amount = None
+                unknown_activity = False
 
                 if type == 'pay':
                     receiver = txn_info.get('rcv', sender)
