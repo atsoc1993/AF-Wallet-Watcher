@@ -5,7 +5,7 @@ import os
 
 load_dotenv()
 
-bot_token = os.getenv('bot_token')
+bot_token = os.getenv('BOT_TOKEN')
 assert bot_token != None, "No bot token to load from .env, create a bot in discord developer portal and get secret token"
 
 intents = discord.Intents.default()
