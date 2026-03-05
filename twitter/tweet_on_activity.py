@@ -3,6 +3,7 @@ from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkCo
 import os
 from dotenv import load_dotenv
 from typing import cast, Any
+from discord_messages.bot import send_algorand_foundation_transaction_message # type: ignore
 import time
 
 load_dotenv()
@@ -140,6 +141,7 @@ def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_ty
         return
 
     tweet_text = tweet_text + f'\nPera Link:\nhttps://explorer.perawallet.app/tx/{tx_id}'
+    discord_text = tweet_text
     tweet_text = tweet_text + '\n\n' '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
 
     payload = {"text": tweet_text}
@@ -154,6 +156,7 @@ def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_ty
         raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
 
     print("Tweeted:", tweet_text)
+    send_algorand_foundation_transaction_message(discord_text)
     time.sleep(2)
 
 previous_round = 0
