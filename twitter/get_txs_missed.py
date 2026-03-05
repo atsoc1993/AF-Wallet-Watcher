@@ -75,7 +75,7 @@ def process_txs(txs: list[dict[str, Any]], address: str, page: str) -> None:
         write_to_json(tx, address)
 
 def write_to_json(tx: dict[str, Any], address: str) -> None:
-    with open(f'AF-Wallet-Watcher/txs_missed/txs_missed_{address}.jsonl', 'a') as f:
+    with open(f'AF-Wallet-Watcher/twitter/txs_missed/txs_missed_{address}.jsonl', 'a') as f:
         f.write(f'{json.dumps(tx)}\n')
 
 def get_transactions_missed():
