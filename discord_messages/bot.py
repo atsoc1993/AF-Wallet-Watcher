@@ -13,8 +13,8 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
-@bot.command()
-async def ping(ctx):
-    await ctx.send('pong')
+async def send_algorand_foundation_transaction_message(ctx, message: str):
+    await ctx.send(message)
+
 
 bot.run(bot_token)
