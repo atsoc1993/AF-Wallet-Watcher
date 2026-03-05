@@ -1,8 +1,9 @@
+from requests_oauthlib import OAuth1Session # get stub via pip install types-requests-oauthlib
 from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkConfig
-from requests_oauthlib import OAuth1Session
-from dotenv import load_dotenv
-import time
 import os
+from dotenv import load_dotenv
+from typing import cast, Any
+import time
 
 load_dotenv()
 
@@ -18,6 +19,7 @@ config = AlgoClientConfigs(
     indexer_config=None,
     kmd_config=None,
 )
+
 foundation_market_wallets = {
     'KEU3FQHJ5CVO7DC5OJKHR74Z6M3X26O4IZYHHAIV6T7SLYHJJG32LCHICQ': 'Foundation: Treasury 1',
     '6OZQ3ENWXS4JFMIUKMKHPTQPWJVSN6VGBMSBR2E3BY3S5CPF2JPLGUXAJQ': 'Foundation: Treasury 3',
@@ -76,41 +78,52 @@ foundation_market_wallets = {
     'TVUQW6NXMHZFZAV6D7PQMW4DIUL5UB42L2JLIYNGRHH6UW362HGNVI26DY': 'Unlabeled Foundation Wallet',
     'B223SVF452UWAMMLNIHIUAPHYPX5J3HLVJF6MNOHUJE2NWJBG7C66JILGE': 'Unlabeled Foundation Wallet',
     '4E7OINW7M6G6OT2SQZ7ZKFPWJ7CAAFTPOG2RZISJ3YZU5VCJQ64ZIROC44': 'Unlabeled Foundation Wallet',
-    'EQPH5S3T5YQCYXR6H42QQDBNDIATT7BMJPIU43TRVRZZ2UPMZIHFM2HKJM': 'Midas RWA'
+    'EQPH5S3T5YQCYXR6H42QQDBNDIATT7BMJPIU43TRVRZZ2UPMZIHFM2HKJM': 'Midas RWA',
+    'RW466IANOKLA36QARHMBX5VCY3PYDR3H2N5XHPDARG6UBOKCIK7WAMLSCA': 'Unlabled Foundation Wallet',
+    '5NTF3MGWL5B2X426P27FE3AUPOUU3OYSRCLP3O4Y7JI2BFGJWPGUBOB2NI': 'Unlabled Foundation Wallet',
+    'JEBTS2MKIIN2EWSXPWEWJ4GUMVOYB2JYZ4XCRD4KJPVNAO6YBJTPBBJBE4': 'Unlabled Foundation Wallet',
+    'T5TGE4UXGMKZBQ3D3SOB34CQDMSRDXO5H6O55663SRD275ZMK6UG7PYNC4': 'Unlabled Foundation Wallet',
+    'BMZT7U2KSXVGI7LWRJVDM7S7CEPT2VFOBMA45QC25WJ2TRB5P7USAD3TR4': 'Unlabled Foundation Wallet',
+    '4SN2OPSTRXDAXAG5HY7GVSQUXYL5NXPENLMHRG2SH5Q2ZF5ACXJRGWDYNE': 'Unlabled Foundation Wallet',
 }
 
 def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_type: str, unknown_activity: bool):
- 
+
     sender_label = foundation_market_wallets.get(sender)
     receiver_label = foundation_market_wallets.get(receiver)
 
     sender_is_af = sender_label is not None
-    receiver_is_af = receiver_label is not None
+    receiver_is_af = receiver_label is not None and receiver_label != 'Alpha Arcade USDC Fee Faucet'
 
-    sender_is_mops = sender_is_af and "Market Operations" in sender_label
-    receiver_is_mops = receiver_is_af and "Market Operations" in receiver_label
+    sender_is_mops = sender_is_af and sender_label and "Market Operations" in sender_label 
+    receiver_is_mops = receiver_is_af and receiver_label and "Market Operations" in receiver_label 
 
     if asset == 0:
         asset_name, decimals = "Algo", 6
     else:
         info = algorand.asset.get_by_id(asset)
-        asset_name = info.asset_name
+        asset_name = info.asset_name if info.asset_name != None else ''
         decimals = info.decimals
 
     amt_fmt = f"{amount / 10**decimals:,.2f}"
 
-    if asset == 470842789: #Ignore Defly airdrops
+    if asset == 470842789: #ignore defly related drops
         return
-    
-    if unknown_activity and type != 'keyreg':
-        tweet_text = f"Foundation Wallet Activity:\n {sender_label or sender} ({sender}) performed an uncrawled application call or key registration transaction."
-        
+
+    if sender == 'XUIBTKHE7ISNMCLJWXUOOK6X3OCP3GVV3Z4J33PHMYX6XXK3XWN' and not receiver_is_af: # If Alpha Arcade & not a foundation wallet
+        return # Not essential to be processing these sadly, sorry Alpha Arcade <3
+
+    if unknown_activity: # Not crawling app calls, too ambiguous
+        tweet_text = (
+            "Foundation Wallet Activity:\n"
+            f"{sender_label or sender} ({sender}) performed an uncrawled application call or key registration transaction."
+        )
 
     elif tx_type == 'keyreg':
-        algo_balance = algorand.client.algod.account_info(sender)['amount'] / 10**6
-        tweet_text = f"{sender_label} renewed participation keys or removed {algo_balance:,.0f} Algorand from online stake!"
+        algo_balance = cast(dict[str, Any], algorand.client.algod.account_info(sender)).get('amount', 0) / 10**6
+        tweet_text = f"{sender_label} removed {algo_balance:,.0f} Algorand from online stake! =)"
 
-    elif sender == receiver and asset:
+    elif sender == receiver:
         tweet_text = f'{sender_label} opted into {asset_name}'
 
     elif sender_is_mops and not receiver_is_mops:
@@ -122,7 +135,7 @@ def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_ty
 
     elif (not sender_is_af) and receiver_is_af:
         tweet_text = f"Unknown address {sender} sent {amt_fmt} {asset_name} to {receiver_label}."
-        
+
     else:
         return
 
@@ -141,8 +154,7 @@ def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_ty
         raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
 
     print("Tweeted:", tweet_text)
-    time.sleep(2)  
-
+    time.sleep(2)
 
 previous_round = 0
 
@@ -150,29 +162,29 @@ algorand = AlgorandClient(config=config)
 
 while True:
     try:
-        next_round = algorand.client.algod.status()['last-round']
+        next_round = cast(dict[str, Any], algorand.client.algod.status())['last-round']
         if next_round > previous_round:
             algorand = AlgorandClient(config=config)
 
-            block_txs = algorand.client.algod.get_block_txids(next_round)['blockTxids']
-            block_info = algorand.client.algod.block_info(next_round)['block']['txns']
-            tx_and_info = [[id, tx['txn']] for id, tx in zip(block_txs, block_info)]
+            block_txs = cast(dict[str, Any], algorand.client.algod.get_block_txids(next_round))['blockTxids']
+            block_info = cast(dict[str, Any], algorand.client.algod.block_info(next_round))['block']['txns']
+            tx_and_info: list[tuple[str, dict[str, Any]]] = [(id, tx['txn']) for id, tx in zip(block_txs, block_info)]
+            
             for tx_id, txn_info in tx_and_info:
                 found_AF_tx = False
                 sender = txn_info.get('snd', None)
                 type = txn_info['type']
                 receiver = None
-                asset = None
+                asset = 0
                 amount = None
                 unknown_activity = False
 
                 if type == 'pay':
                     receiver = txn_info.get('rcv', sender)
-                    asset = 0
                     amount = txn_info.get('amt', 0)
                     unknown_activity = False
                     if (sender in foundation_market_wallets or receiver in foundation_market_wallets) \
-                        and amount > 1_000_000:                    
+                        and amount > 1_000_000:
                         found_AF_tx = True
 
                 elif type == 'axfer':
@@ -180,25 +192,33 @@ while True:
                     asset = txn_info['xaid']
                     amount = txn_info.get('aamt', 0)
                     unknown_activity = False
-                    if sender in foundation_market_wallets or receiver in foundation_market_wallets:
+                    if (sender in foundation_market_wallets or receiver in foundation_market_wallets) and sender != 'XUIBTKHE7ISNMCLJWXUOOK6X3OCP3GVV3Z4J33PHMYX6XXK3XWN3KDMMNI':
                         found_AF_tx = True
 
                 else:
                     unknown_activity = True
                     receiver = ''
-                    asset = 0
                     amount = 0
-                    if sender in foundation_market_wallets:
+                    if sender in foundation_market_wallets and sender != 'XUIBTKHE7ISNMCLJWXUOOK6X3OCP3GVV3Z4J33PHMYX6XXK3XWN3KDMMNI':
                         found_AF_tx = True
 
                 if found_AF_tx:
-                    tweet(tx_id=tx_id, sender=sender, receiver=receiver, asset=asset, amount=amount, unknown_activity=unknown_activity, tx_type=type)
+                    tweet(
+                        tx_id=tx_id,
+                        sender=sender,
+                        receiver=receiver,
+                        asset=asset,
+                        amount=amount,
+                        unknown_activity=unknown_activity,
+                        tx_type=type
+                    )
+
             previous_round = next_round
-            time.sleep(2)
-        time.sleep(1)
+            time.sleep(1.8)
+
     except Exception as e:
         if 'txns' not in str(e):
             print(e)
-        time.sleep(5)
+        time.sleep(1.8)
         algorand = AlgorandClient(config=config)
         pass
