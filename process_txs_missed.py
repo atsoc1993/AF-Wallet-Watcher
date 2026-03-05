@@ -144,6 +144,8 @@ def process_transactions_missed():
     global block_rewards_earned
     global fee_address
     global alpha_arcade_address
+    
+    txs_processed = []
 
     files_in_txs_missed_dir = os.listdir('txs_missed')
 
@@ -155,7 +157,10 @@ def process_transactions_missed():
             for line in f:
                 txn_info = json.loads(line)
                 print(txn_info)
-                tx_id = txn_info['id']
+                tx_id = txn_info.get('id')
+                if tx_id in txs_processed:
+                    continue
+                txs_processed.append(tx_id)
                 found_AF_tx = False
                 sender = txn_info.get('sender', None)
                 type = txn_info.get('tx-type')
