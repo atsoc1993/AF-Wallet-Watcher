@@ -50,14 +50,31 @@ def getAlgoPrice():
 
     return algorand_price
 
-def write_to_json(tweet_text: str) -> None:
-    with open(f'txs_missed/compiled_tweet.jsonl', 'a') as f:
+
+def write_tweets_to_json(tweet_text: str) -> None:
+    with open(f'txs_missed/compiled_tweets.jsonl', 'a') as f:
         f.write(f'{tweet_text}\n\n')
 
-def add_tweet_text_to_jsonl(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_type: str, unknown_activity: bool, date: str):
+def timestamp_to_date(timestamp: int) -> str:
+    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
+
+def write_tweets_to_json_chronologically(timestamps_and_tweets: list[tuple[int, str]]) -> None:
+    timestamps_and_tweets.sort(key=lambda x: x[0])
+    for timestamp_and_tweet in timestamps_and_tweets:
+        tweet = timestamp_and_tweet[1]
+        with open(f'txs_missed/chronologically_compiled_tweets.jsonl', 'a') as f:
+            f.write(f'{tweet}\n\n')
+
+
+def add_tweet_text_to_jsonl(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_type: str, unknown_activity: bool, timestamp: int):
+
+    global all_tweets_and_timestamps
+
     global market_ops_algo_out
     global internal_algo_transfer_total
     
+    date = timestamp_to_date(timestamp)
+
     sender_label = foundation_market_wallets.get(sender)
     receiver_label = foundation_market_wallets.get(receiver)
 
@@ -77,7 +94,7 @@ def add_tweet_text_to_jsonl(tx_id: str, sender: str, receiver: str, asset: int, 
 
     amt_fmt = f"{amount / 10**decimals:,.2f}"
 
-    if asset == 470842789: #ignore defly related drops
+    if asset == 470842789: # ignore defly related drops
         return
 
     if sender == 'XUIBTKHE7ISNMCLJWXUOOK6X3OCP3GVV3Z4J33PHMYX6XXK3XWN' and not receiver_is_af: # If Alpha Arcade & not a foundation wallet
@@ -115,7 +132,9 @@ def add_tweet_text_to_jsonl(tx_id: str, sender: str, receiver: str, asset: int, 
     tweet_text += f'\nPera Link:\nhttps://explorer.perawallet.app/tx/{tx_id}'
     tweet_text += '\n\n' '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
 
-    write_to_json(tweet_text)
+    all_tweets_and_timestamps.append((timestamp, tweet_text)) # will sort by timestamp later to organize compiled tweet jsonl
+
+    write_tweets_to_json(tweet_text)
 
 
 def process_transactions_missed():
@@ -132,7 +151,6 @@ def process_transactions_missed():
         if file == 'compiled_tweet.jsonl':
             continue
         filepath = 'txs_missed/' + file
-        address = file.split('_')[2]
         with open(filepath, 'r') as f:
             for line in f:
                 txn_info = json.loads(line)
@@ -146,7 +164,6 @@ def process_transactions_missed():
                 amount = None
                 unknown_activity = False
                 timestamp = txn_info.get('round-time')
-                date_str = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
                 if sender == alpha_arcade_address:
                     continue
 
@@ -186,7 +203,7 @@ def process_transactions_missed():
                         amount=amount,
                         unknown_activity=unknown_activity,
                         tx_type=type,
-                        date=date_str
+                        timestamp=timestamp
                     )
 
 fee_address = 'Y76M3MSY6DKBRHBL7C3NNDXGS5IIMQVQVUAB6MP4XEMMGVF2QWNPL226CA'
@@ -195,6 +212,7 @@ alpha_arcade_address = 'XUIBTKHE7ISNMCLJWXUOOK6X3OCP3GVV3Z4J33PHMYX6XXK3XWN3KDMM
 market_ops_algo_out = 0
 internal_algo_transfer_total = 0
 block_rewards_earned = 0
+all_tweets_and_timestamps: list[tuple[int, str]] = []
 
 process_transactions_missed()
 
@@ -209,6 +227,8 @@ block_rewards_earned_usdc_amount = block_rewards_earned_scaled_down * getAlgoPri
 print(f'Market Operations Algo Out: {market_ops_algo_out_scaled_down:,.0f} Algo (${market_ops_algo_out_usdc_amount:,.2f})')
 print(f'Internal Transfers Algo Amount: {internal_algo_transfer_total_scaled_down:,.0f} Algo (${internal_algo_transfer_total_usdc_amount:,.2f})')
 print(f'Block Rewards Earned by Foundation Wallets: {block_rewards_earned_scaled_down:,.0f} Algo (${block_rewards_earned_usdc_amount:,.2f})')
+
+write_tweets_to_json_chronologically(all_tweets_and_timestamps)
 
 '''
 Output after processing:
