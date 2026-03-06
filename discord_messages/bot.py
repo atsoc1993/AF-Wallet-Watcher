@@ -17,7 +17,6 @@ intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 
-@bot.command()
 async def send_algorand_foundation_transaction_message(ctx: commands.Context, message: str = "Test"):
     channel = bot.get_channel(channel_id)
     if channel and isinstance(channel, (discord.TextChannel, discord.Thread)):
@@ -25,5 +24,8 @@ async def send_algorand_foundation_transaction_message(ctx: commands.Context, me
     else:
         await ctx.send("Invalid Channel ID")
 
+@bot.command()
+async def test(ctx: commands.Context):
+    await ctx.send("Twitter Bot & Myself are online.")
 
 bot.run(bot_token)
