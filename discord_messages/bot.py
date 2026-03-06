@@ -28,4 +28,5 @@ async def send_algorand_foundation_transaction_message(ctx: commands.Context, me
 async def test(ctx: commands.Context):
     await ctx.send("Twitter Bot & Myself are online.")
 
-bot.run(bot_token)
+if __name__ == "__main__":
+    bot.run(bot_token)
