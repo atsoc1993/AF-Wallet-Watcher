@@ -88,7 +88,7 @@ foundation_market_wallets = {
     '4SN2OPSTRXDAXAG5HY7GVSQUXYL5NXPENLMHRG2SH5Q2ZF5ACXJRGWDYNE': 'Unlabled Foundation Wallet',
 }
 
-def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_type: str, unknown_activity: bool):
+async def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_type: str, unknown_activity: bool):
 
     sender_label = foundation_market_wallets.get(sender)
     receiver_label = foundation_market_wallets.get(receiver)
@@ -164,6 +164,7 @@ previous_round = 0
 algorand = AlgorandClient(config=config)
 
 while True:
+    print("Watcher running")
     try:
         next_round = cast(dict[str, Any], algorand.client.algod.status())['last-round']
         if next_round > previous_round:
@@ -183,11 +184,12 @@ while True:
                 unknown_activity = False
 
                 if type == 'pay':
+                    print(txn_info)
                     receiver = txn_info.get('rcv', sender)
                     amount = txn_info.get('amt', 0)
                     unknown_activity = False
                     if (sender in foundation_market_wallets or receiver in foundation_market_wallets) \
-                        and amount > 1_000_000:
+                        and amount > 5:
                         found_AF_tx = True
 
                 elif type == 'axfer':
