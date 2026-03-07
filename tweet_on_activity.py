@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from typing import cast, Any
 from discord_messages.bot import send_algorand_foundation_transaction_message # type: ignore
+from yourplace_messages.bot import send_yourplace_post
 import time
 
 load_dotenv()
@@ -157,6 +158,7 @@ async def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int,
 
     print("Tweeted:", tweet_text)
     send_algorand_foundation_transaction_message(discord_text)
+    send_yourplace_post(discord_text)
     time.sleep(2)
 
 previous_round = 0
