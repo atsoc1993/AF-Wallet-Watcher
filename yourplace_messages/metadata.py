@@ -40,6 +40,8 @@ def set_avatar(url: str):
     create_and_submit_txn(f'yp/1/ma:{json.dumps({"a": url})}')
 def set_banner(url: str):
     create_and_submit_txn(f'yp/1/mb:{json.dumps({"b": url})}')
+def set_bot(bot: bool):
+    create_and_submit_txn(f'yp/1/mbot:{json.dumps({"bot": bot})}')
 def set_description(description: str):
     create_and_submit_txn(f'yp/1/md:{json.dumps({"d": description})}')
 def set_name(name: str):
@@ -54,5 +56,6 @@ if __name__ == "__main__":
     set_description("Monitoring Algorand Foundation wallet activity in real-time.")
     set_vertical("News")
     set_website("https://x.com/AFWalletWatcher")
+    set_bot(True)
     # set_avatar("https://example.com/avatar.png")
     # set_banner("https://example.com/banner.png")
