@@ -16,7 +16,7 @@ ACCESS_TOKEN_SECRET = os.getenv("ACCESS_SECRET")
 NODE_TOKEN = os.getenv('ALGOD_TOKEN')
 NODE_PORT = os.getenv('PORT')
 
-CONFIG = config = AlgoClientConfigs(
+CONFIG = AlgoClientConfigs(
     algod_config=AlgoClientNetworkConfig(server='http://localhost', port=NODE_PORT, token=NODE_TOKEN),
     indexer_config=None,
     kmd_config=None,
@@ -90,9 +90,7 @@ foundation_market_wallets = {
 
 
 
-def getAlgoPrice():
-
-    algorand = AlgorandClient.mainnet()
+def getAlgoPrice(algorand: AlgorandClient):
 
     POOL_LOGICSIG_TEMPLATE = (
         "BoAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgQBbNQA0ADEYEkQxGYEBEkSBAUM="
@@ -133,17 +131,14 @@ def getAlgoPrice():
 
     return algorand_price
 
-def balance_summary_tweet():
-
-    algorand_price = getAlgoPrice()
+def balance_summary_tweet(algorand: AlgorandClient):
+    algorand_price = getAlgoPrice(algorand=algorand)
     balances_text = ''
-    total_algo = 0
     total_value = 0
-    algorand = AlgorandClient.mainnet()
     decimals_scale = 10**6
     balances = []
     total_algo = 0.0
-    total_value = 0.0
+    total_value = 0
 
     for addr, label in foundation_market_wallets.items():
         info = algorand.account.get_information(addr)
@@ -197,10 +192,7 @@ def balance_summary_tweet():
 
                 next_page = payout_txs.get('next-token', None)
                 if not next_page:
-                    print(f'No next page')
                     next_page_available=False
-                else:
-                    print(f'Has next page')
 
             incentives_string = f'\nOpted Into Incentives: Yes\nRewards Earned (last 7 days): {(rewards_earned / decimals_scale):,.2f}A | ${((rewards_earned / decimals_scale)* algorand_price):,.2f}'
         if online:
@@ -229,5 +221,11 @@ def balance_summary_tweet():
 
 
 while True:
-    balance_summary_tweet()
+    try:
+        algorand = AlgorandClient(config=CONFIG)
+        algorand.client.algod.status()
+    except:
+        algorand = AlgorandClient.mainnet()
+
+    balance_summary_tweet(algorand=algorand)
     time.sleep(604_800)
