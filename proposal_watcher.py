@@ -79,6 +79,7 @@ def create_tweet_content(app: dict[str, Any]) -> str:
 
 
 def tweet_new_proposal(tweet_text: str):
+    tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
     payload = {"text": tweet_text}
     oauth = OAuth1Session(
         CONSUMER_KEY,

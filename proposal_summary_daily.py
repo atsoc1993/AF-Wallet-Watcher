@@ -108,6 +108,8 @@ def create_tweet_content(algorand: AlgorandClient) -> str:
     return tweet_text
 
 def test_tweet(tweet_text: str):
+    tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
+
     payload = {"text": tweet_text}
     oauth   = OAuth1Session(
         CONSUMER_KEY,
@@ -133,5 +135,5 @@ while True:
         test_tweet(tweet_text)  
     except Exception as e:
         print(e)
-        
+
     sleep(86_400)
