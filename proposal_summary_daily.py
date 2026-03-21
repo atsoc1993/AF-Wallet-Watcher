@@ -123,11 +123,15 @@ def test_tweet(tweet_text: str):
 
 while True:
     try:
-        algorand = AlgorandClient(config=CONFIG)
-        algorand.client.algod.status()
-    except:
-        algorand = AlgorandClient.mainnet()
-    tweet_text = create_tweet_content(algorand=algorand)
-    
-    test_tweet(tweet_text)  
+        try:
+            algorand = AlgorandClient(config=CONFIG)
+            algorand.client.algod.status()
+        except:
+            algorand = AlgorandClient.mainnet()
+        tweet_text = create_tweet_content(algorand=algorand)
+
+        test_tweet(tweet_text)  
+    except Exception as e:
+        print(e)
+        
     sleep(86_400)

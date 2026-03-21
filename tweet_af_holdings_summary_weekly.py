@@ -222,10 +222,13 @@ def balance_summary_tweet(algorand: AlgorandClient):
 
 while True:
     try:
-        algorand = AlgorandClient(config=CONFIG)
-        algorand.client.algod.status()
-    except:
-        algorand = AlgorandClient.mainnet()
+        try:
+            algorand = AlgorandClient(config=CONFIG)
+            algorand.client.algod.status()
+        except:
+            algorand = AlgorandClient.mainnet()
 
-    balance_summary_tweet(algorand=algorand)
+        balance_summary_tweet(algorand=algorand)
+    except Exception as e:
+        print(e)
     time.sleep(604_800)

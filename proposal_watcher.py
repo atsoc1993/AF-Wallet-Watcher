@@ -98,29 +98,31 @@ initial_run = True
 
 while True:
     try:
-        algorand = AlgorandClient(config=CONFIG)
-        algorand.client.algod.status()
-    except:
-        algorand = AlgorandClient.mainnet()
+        try:
+            algorand = AlgorandClient(config=CONFIG)
+            algorand.client.algod.status()
+        except:
+            algorand = AlgorandClient.mainnet()
 
-    created_applications: list[dict[str, Any]] = algorand.account.get_information(XGOV_APP_ADDRESS).created_apps
-    current_ids = {app["id"] for app in created_applications if "id" in app}
+        created_applications: list[dict[str, Any]] = algorand.account.get_information(XGOV_APP_ADDRESS).created_apps
+        current_ids = {app["id"] for app in created_applications if "id" in app}
 
-    if initial_run:
-        seen_app_ids = current_ids
-        initial_run = False
-    else:
-        new_apps = [app for app in created_applications if app["id"] not in seen_app_ids]
-
-        if new_apps:
-            print("New Proposal Detected")
-            for app in new_apps:
-                tweet_text = create_tweet_content(app)
-
-                if tweet_text:
-                    tweet_new_proposal(tweet_text)
-
+        if initial_run:
             seen_app_ids = current_ids
+            initial_run = False
+        else:
+            new_apps = [app for app in created_applications if app["id"] not in seen_app_ids]
 
+            if new_apps:
+                print("New Proposal Detected")
+                for app in new_apps:
+                    tweet_text = create_tweet_content(app)
+
+                    if tweet_text:
+                        tweet_new_proposal(tweet_text)
+
+                seen_app_ids = current_ids
+    except Exception as e:
+        print(e)
 
     sleep(180)
