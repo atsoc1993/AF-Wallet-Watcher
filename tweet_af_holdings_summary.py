@@ -1,5 +1,5 @@
 from requests_oauthlib import OAuth1Session
-from algokit_utils import AlgorandClient
+from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkConfig
 from algosdk.transaction import LogicSigAccount
 from base64 import b64decode
 from dotenv import load_dotenv
@@ -8,11 +8,19 @@ import os
 
 load_dotenv()
 
-consumer_key = os.getenv("CONSUMER_KEY")
-consumer_secret = os.getenv("CONSUMER_SECRET")
-access_token = os.getenv("ACCESS_TOKEN")
-access_token_secret = os.getenv("ACCESS_SECRET")
+CONSUMER_KEY = os.getenv("CONSUMER_KEY")
+CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+ACCESS_TOKEN_SECRET = os.getenv("ACCESS_SECRET")
 
+NODE_TOKEN = os.getenv('ALGOD_TOKEN')
+NODE_PORT = os.getenv('PORT')
+
+CONFIG = config = AlgoClientConfigs(
+    algod_config=AlgoClientNetworkConfig(server='http://localhost', port=NODE_PORT, token=NODE_TOKEN),
+    indexer_config=None,
+    kmd_config=None,
+)
 
 foundation_market_wallets = {
     'KEU3FQHJ5CVO7DC5OJKHR74Z6M3X26O4IZYHHAIV6T7SLYHJJG32LCHICQ': 'Foundation: Treasury 1',
@@ -208,10 +216,10 @@ def balance_summary_tweet():
     payload = {"text": tweet_text}
 
     oauth   = OAuth1Session(
-        consumer_key,
-        client_secret=consumer_secret,
-        resource_owner_key=access_token,
-        resource_owner_secret=access_token_secret,
+        CONSUMER_KEY,
+        client_secret=CONSUMER_SECRET,
+        resource_owner_key=ACCESS_TOKEN,
+        resource_owner_secret=ACCESS_TOKEN_SECRET,
     )
     resp = oauth.post("https://api.twitter.com/2/tweets", json=payload)
     if resp.status_code != 201:
