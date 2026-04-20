@@ -1,5 +1,5 @@
 from requests_oauthlib import OAuth1Session
-from algokit_utils import AlgorandClient
+from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkConfig
 from algosdk.transaction import LogicSigAccount
 from base64 import b64decode
 from dotenv import load_dotenv
@@ -9,11 +9,19 @@ import os
 
 load_dotenv()
 
-consumer_key = os.getenv("CONSUMER_KEY")
-consumer_secret = os.getenv("CONSUMER_SECRET")
-access_token = os.getenv("ACCESS_TOKEN")
-access_token_secret = os.getenv("ACCESS_SECRET")
+CONSUMER_KEY = os.getenv("CONSUMER_KEY")
+CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+ACCESS_TOKEN_SECRET = os.getenv("ACCESS_SECRET")
 
+NODE_TOKEN = os.getenv('ALGOD_TOKEN')
+NODE_PORT = os.getenv('PORT')
+
+CONFIG = AlgoClientConfigs(
+    algod_config=AlgoClientNetworkConfig(server='http://localhost', port=NODE_PORT, token=NODE_TOKEN),
+    indexer_config=None,
+    kmd_config=None,
+)
 
 foundation_market_wallets = {
     'KEU3FQHJ5CVO7DC5OJKHR74Z6M3X26O4IZYHHAIV6T7SLYHJJG32LCHICQ': 'Foundation: Treasury 1',
@@ -83,9 +91,7 @@ foundation_market_wallets = {
 
 
 
-def getAlgoPrice():
-
-    algorand = AlgorandClient.mainnet()
+def getAlgoPrice(algorand: AlgorandClient):
 
     POOL_LOGICSIG_TEMPLATE = (
         "BoAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgQBbNQA0ADEYEkQxGYEBEkSBAUM="
@@ -126,17 +132,14 @@ def getAlgoPrice():
 
     return algorand_price
 
-def balance_summary_tweet():
-
-    algorand_price = getAlgoPrice()
+def balance_summary_tweet(algorand: AlgorandClient):
+    algorand_price = getAlgoPrice(algorand=algorand)
     balances_text = ''
-    total_algo = 0
     total_value = 0
-    algorand = AlgorandClient.mainnet()
     decimals_scale = 10**6
     balances = []
     total_algo = 0.0
-    total_value = 0.0
+    total_value = 0
 
     for addr, label in foundation_market_wallets.items():
         info = algorand.account.get_information(addr)
@@ -190,10 +193,7 @@ def balance_summary_tweet():
 
                 next_page = payout_txs.get('next-token', None)
                 if not next_page:
-                    print(f'No next page')
                     next_page_available=False
-                else:
-                    print(f'Has next page')
 
             incentives_string = f'\nOpted Into Incentives: Yes\nRewards Earned (last 7 days): {(rewards_earned / decimals_scale):,.2f}A | ${((rewards_earned / decimals_scale)* algorand_price):,.2f}'
         if online:
@@ -210,10 +210,10 @@ def balance_summary_tweet():
     payload = {"text": tweet_text}
 
     oauth   = OAuth1Session(
-        consumer_key,
-        client_secret=consumer_secret,
-        resource_owner_key=access_token,
-        resource_owner_secret=access_token_secret,
+        CONSUMER_KEY,
+        client_secret=CONSUMER_SECRET,
+        resource_owner_key=ACCESS_TOKEN,
+        resource_owner_secret=ACCESS_TOKEN_SECRET,
     )
     resp = oauth.post("https://api.twitter.com/2/tweets", json=payload)
     if resp.status_code != 201:
@@ -223,5 +223,14 @@ def balance_summary_tweet():
 
 
 while True:
-    balance_summary_tweet()
+    try:
+        try:
+            algorand = AlgorandClient(config=CONFIG)
+            algorand.client.algod.status()
+        except:
+            algorand = AlgorandClient.mainnet()
+
+        balance_summary_tweet(algorand=algorand)
+    except Exception as e:
+        print(e)
     time.sleep(604_800)

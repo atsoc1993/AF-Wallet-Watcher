@@ -1,23 +1,23 @@
-from requests_oauthlib import OAuth1Session # get stub via pip install types-requests-oauthlib
+from requests_oauthlib import OAuth1Session
 from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkConfig
-import os
 from dotenv import load_dotenv
 from typing import cast, Any
-from discord_messages.bot import send_algorand_foundation_transaction_message # type: ignore
 from yourplace_messages.bot import send_yourplace_post
-import time
+from time import sleep
+import os
 
 load_dotenv()
 
-consumer_key = os.getenv("CONSUMER_KEY")
-consumer_secret = os.getenv("CONSUMER_SECRET")
-access_token = os.getenv("ACCESS_TOKEN")
-access_token_secret = os.getenv("ACCESS_SECRET")
-node_token = os.getenv('ALGOD_TOKEN')
-node_port = os.getenv('PORT')
+CONSUMER_KEY = os.getenv("CONSUMER_KEY")
+CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
+ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
+ACCESS_TOKEN_SECRET = os.getenv("ACCESS_SECRET")
 
-config = AlgoClientConfigs(
-    algod_config=AlgoClientNetworkConfig(server='http://localhost', port=node_port, token=node_token),
+NODE_TOKEN = os.getenv('ALGOD_TOKEN')
+NODE_PORT = os.getenv('PORT')
+
+CONFIG = AlgoClientConfigs(
+    algod_config=AlgoClientNetworkConfig(server='http://localhost', port=NODE_PORT, token=NODE_TOKEN),
     indexer_config=None,
     kmd_config=None,
 )
@@ -89,7 +89,12 @@ foundation_market_wallets = {
     '4SN2OPSTRXDAXAG5HY7GVSQUXYL5NXPENLMHRG2SH5Q2ZF5ACXJRGWDYNE': 'Unlabled Foundation Wallet',
 }
 
-async def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int, tx_type: str, unknown_activity: bool):
+def tweet(
+    tx_id: str, sender: str,
+    receiver: str, asset: int,
+    amount: int, tx_type: str,
+    unknown_activity: bool, algorand: AlgorandClient
+):
 
     sender_label = foundation_market_wallets.get(sender)
     receiver_label = foundation_market_wallets.get(receiver)
@@ -142,39 +147,40 @@ async def tweet(tx_id: str, sender: str, receiver: str, asset: int, amount: int,
         return
 
     tweet_text = tweet_text + f'\nPera Link:\nhttps://explorer.perawallet.app/tx/{tx_id}'
-    discord_text = tweet_text
+    yourplace_text = tweet_text
     tweet_text = tweet_text + '\n\n' '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
 
     payload = {"text": tweet_text}
+
     oauth   = OAuth1Session(
-        consumer_key,
-        client_secret=consumer_secret,
-        resource_owner_key=access_token,
-        resource_owner_secret=access_token_secret,
+        CONSUMER_KEY,
+        client_secret=CONSUMER_SECRET,
+        resource_owner_key=ACCESS_TOKEN,
+        resource_owner_secret=ACCESS_TOKEN_SECRET,
     )
     resp = oauth.post("https://api.twitter.com/2/tweets", json=payload)
     if resp.status_code != 201:
         raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
 
     print("Tweeted:", tweet_text)
-    send_algorand_foundation_transaction_message(discord_text)
-    send_yourplace_post(discord_text)
-    time.sleep(2)
+    send_yourplace_post(yourplace_text)
+    sleep(2)
 
 previous_round = 0
 
-algorand = AlgorandClient(config=config)
-
 while True:
-    print("Watcher running")
+    try:
+        algorand = AlgorandClient(config=CONFIG)
+        algorand.client.algod.status()
+    except:
+        algorand = AlgorandClient.mainnet()
     try:
         next_round = cast(dict[str, Any], algorand.client.algod.status())['last-round']
         if next_round > previous_round:
-            algorand = AlgorandClient(config=config)
 
             block_txs = cast(dict[str, Any], algorand.client.algod.get_block_txids(next_round))['blockTxids']
             block_info = cast(dict[str, Any], algorand.client.algod.block_info(next_round))['block']['txns']
-            tx_and_info: list[tuple[str, dict[str, Any]]] = [(id, tx['txn']) for id, tx in zip(block_txs, block_info)]
+            tx_and_info: list[tuple[str, dict[str, Any]]] = [(id, tx['txn']) for id, tx in zip(block_txs, block_info)] # type: ignore
             
             for tx_id, txn_info in tx_and_info:
                 found_AF_tx = False
@@ -186,12 +192,11 @@ while True:
                 unknown_activity = False
 
                 if type == 'pay':
-                    print(txn_info)
                     receiver = txn_info.get('rcv', sender)
                     amount = txn_info.get('amt', 0)
                     unknown_activity = False
                     if (sender in foundation_market_wallets or receiver in foundation_market_wallets) \
-                        and amount > 5:
+                        and amount > 10_000_000:
                         found_AF_tx = True
 
                 elif type == 'axfer':
@@ -217,15 +222,14 @@ while True:
                         asset=asset,
                         amount=amount,
                         unknown_activity=unknown_activity,
-                        tx_type=type
+                        tx_type=type,
+                        algorand=algorand
                     )
 
             previous_round = next_round
-            time.sleep(1.8)
 
     except Exception as e:
-        if 'txns' not in str(e):
-            print(e)
-        time.sleep(1.8)
-        algorand = AlgorandClient(config=config)
-        pass
+        algorand = AlgorandClient(config=CONFIG)
+        print(e)
+
+    sleep(2)
