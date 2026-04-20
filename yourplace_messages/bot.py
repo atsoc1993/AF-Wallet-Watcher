@@ -1,5 +1,4 @@
-from algosdk.v2client import algod
-from algosdk import account, transaction
+from algokit_utils import AlgoAmount, AlgoClientNetworkConfig, AlgorandClient, PaymentParams, SigningAccount
 from dotenv import load_dotenv
 import json
 import os
@@ -9,26 +8,49 @@ load_dotenv()
 
 ERROR_LOG = "yourplace_errors.log"
 
-node_token = os.getenv("ALGOD_TOKEN")
-node_port = os.getenv("PORT")
 private_key = os.getenv("YOURPLACE_ALGO_PRIVATE_KEY")
 assert private_key is not None, "YOURPLACE_ALGO_PRIVATE_KEY not set in .env"
-address = account.address_from_private_key(private_key)
-algod_client = algod.AlgodClient(node_token, f"http://localhost:{node_port}")
+
+
+def get_algorand_client() -> AlgorandClient:
+    node_port = os.getenv("PORT")
+    node_token = os.getenv("ALGOD_TOKEN")
+
+    if node_port:
+        try:
+            algorand = AlgorandClient.from_config(
+                algod_config=AlgoClientNetworkConfig(
+                    server="http://localhost",
+                    port=node_port,
+                    token=node_token,
+                )
+            )
+            algorand.client.algod.status()
+            return algorand
+        except Exception:
+            pass
+
+    return AlgorandClient.mainnet()
+
+
+def submit_note_transaction(note: str):
+    algorand = get_algorand_client()
+    account = SigningAccount(private_key)
+    algorand.set_signer_from_account(account)
+    result = algorand.send.payment(
+        PaymentParams(
+            sender=account.address,
+            receiver=account.address,
+            amount=AlgoAmount.from_micro_algo(0),
+            note=note.encode("utf-8"),
+        )
+    )
+    return result.tx_id or result.tx_ids[0]
 
 def send_yourplace_post(message: str):
     try:
         message = message.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br>")
-        sp = algod_client.suggested_params()
-        txn = transaction.PaymentTxn(
-            sender=address,
-            sp=sp,
-            receiver=address,
-            amt=0,
-            note=f'yp/1/p:{json.dumps({"p": message})}'.encode("utf-8")
-        )
-        signed = txn.sign(private_key)
-        tx_id = algod_client.send_transaction(signed)
+        tx_id = submit_note_transaction(f'yp/1/p:{json.dumps({"p": message})}')
         print(f"YourPlace txn submitted: {tx_id}")
         return tx_id
     except Exception as e:
