@@ -6,6 +6,7 @@ from time import sleep
 from typing import Any
 from dotenv import load_dotenv
 from algosdk.encoding import encode_address
+from yourplace_messages.bot import send_yourplace_post
 import os
 
 load_dotenv()
@@ -80,6 +81,7 @@ def create_tweet_content(app: dict[str, Any]) -> str:
 
 def tweet_new_proposal(tweet_text: str):
     tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
+    send_yourplace_post(tweet_text)
     payload = {"text": tweet_text}
     oauth = OAuth1Session(
         CONSUMER_KEY,

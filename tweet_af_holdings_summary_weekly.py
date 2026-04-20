@@ -3,6 +3,7 @@ from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkCo
 from algosdk.transaction import LogicSigAccount
 from base64 import b64decode
 from dotenv import load_dotenv
+from yourplace_messages.bot import send_yourplace_post
 import time
 import os
 
@@ -205,6 +206,7 @@ def balance_summary_tweet(algorand: AlgorandClient):
     )
     tweet_text = total_value_text + balances_text
     tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
+    send_yourplace_post(tweet_text)
     payload = {"text": tweet_text}
 
     oauth   = OAuth1Session(

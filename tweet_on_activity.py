@@ -2,6 +2,7 @@ from requests_oauthlib import OAuth1Session
 from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkConfig
 from dotenv import load_dotenv
 from typing import cast, Any
+from yourplace_messages.bot import send_yourplace_post
 from time import sleep
 import os
 
@@ -89,9 +90,9 @@ foundation_market_wallets = {
 }
 
 def tweet(
-    tx_id: str, sender: str, 
-    receiver: str, asset: int, 
-    amount: int, tx_type: str, 
+    tx_id: str, sender: str,
+    receiver: str, asset: int,
+    amount: int, tx_type: str,
     unknown_activity: bool, algorand: AlgorandClient
 ):
 
@@ -161,7 +162,8 @@ def tweet(
         raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
 
     print("Tweeted:", tweet_text)
-
+    send_yourplace_post(tweet_text)
+    sleep(2)
 
 previous_round = 0
 
@@ -230,4 +232,3 @@ while True:
         print(e)
 
     sleep(2)
-

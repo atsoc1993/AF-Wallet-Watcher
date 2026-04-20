@@ -6,6 +6,7 @@ from algosdk.logic import get_application_address
 from algosdk.encoding import encode_address
 from time import time, sleep
 from typing import Any
+from yourplace_messages.bot import send_yourplace_post
 import json
 from dotenv import load_dotenv
 import os
@@ -184,6 +185,7 @@ def create_tweet_content(algorand: AlgorandClient) -> str:
 
 def test_tweet(tweet_text: str):
     tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
+    send_yourplace_post(tweet_text)
     payload = {"text": tweet_text}
     oauth   = OAuth1Session(
         CONSUMER_KEY,
