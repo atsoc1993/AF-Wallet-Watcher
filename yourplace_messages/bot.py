@@ -7,6 +7,8 @@ import traceback
 load_dotenv()
 
 ERROR_LOG = "yourplace_errors.log"
+MAX_NOTE_BYTES = 1024
+POST_NOTE_PREFIX = "yp/1/p:"
 
 private_key = os.getenv("YOURPLACE_ALGO_PRIVATE_KEY")
 assert private_key is not None, "YOURPLACE_ALGO_PRIVATE_KEY not set in .env"
@@ -34,6 +36,10 @@ def get_algorand_client() -> AlgorandClient:
 
 
 def submit_note_transaction(note: str):
+    note_bytes = note.encode("utf-8")
+    if len(note_bytes) > MAX_NOTE_BYTES:
+        raise ValueError(f"Note exceeds {MAX_NOTE_BYTES} bytes")
+
     algorand = get_algorand_client()
     account = SigningAccount(private_key)
     algorand.set_signer_from_account(account)
@@ -42,15 +48,37 @@ def submit_note_transaction(note: str):
             sender=account.address,
             receiver=account.address,
             amount=AlgoAmount.from_micro_algo(0),
-            note=note.encode("utf-8"),
+            note=note_bytes,
         )
     )
     return result.tx_id or result.tx_ids[0]
 
+
+def build_post_note(message: str) -> str:
+    normalized_message = message.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br>")
+
+    def serialize(candidate: str) -> str:
+        return f'{POST_NOTE_PREFIX}{json.dumps({"p": candidate})}'
+
+    serialized_note = serialize(normalized_message)
+    if len(serialized_note.encode("utf-8")) <= MAX_NOTE_BYTES:
+        return serialized_note
+
+    low, high = 0, len(normalized_message)
+    while low < high:
+        mid = (low + high + 1) // 2
+        candidate_note = serialize(normalized_message[:mid])
+        if len(candidate_note.encode("utf-8")) <= MAX_NOTE_BYTES:
+            low = mid
+        else:
+            high = mid - 1
+
+    truncated_message = normalized_message[:low]
+    return serialize(truncated_message)
+
 def send_yourplace_post(message: str):
     try:
-        message = message.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br>")
-        tx_id = submit_note_transaction(f'yp/1/p:{json.dumps({"p": message})}')
+        tx_id = submit_note_transaction(build_post_note(message))
         print(f"YourPlace txn submitted: {tx_id}")
         return tx_id
     except Exception as e:
