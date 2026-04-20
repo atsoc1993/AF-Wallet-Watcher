@@ -147,7 +147,6 @@ def tweet(
         return
 
     tweet_text = tweet_text + f'\nPera Link:\nhttps://explorer.perawallet.app/tx/{tx_id}'
-    yourplace_text = tweet_text
     tweet_text = tweet_text + '\n\n' '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
 
     payload = {"text": tweet_text}
@@ -163,7 +162,7 @@ def tweet(
         raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
 
     print("Tweeted:", tweet_text)
-    send_yourplace_post(yourplace_text)
+    send_yourplace_post(tweet_text)
     sleep(2)
 
 previous_round = 0

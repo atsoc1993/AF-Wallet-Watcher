@@ -184,9 +184,8 @@ def create_tweet_content(algorand: AlgorandClient) -> str:
     return tweet_text
 
 def test_tweet(tweet_text: str):
-    yourplace_text = tweet_text
     tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
-    send_yourplace_post(yourplace_text)
+    send_yourplace_post(tweet_text)
     payload = {"text": tweet_text}
     oauth   = OAuth1Session(
         CONSUMER_KEY,

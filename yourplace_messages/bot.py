@@ -18,6 +18,7 @@ algod_client = algod.AlgodClient(node_token, f"http://localhost:{node_port}")
 
 def send_yourplace_post(message: str):
     try:
+        message = message.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br>")
         sp = algod_client.suggested_params()
         txn = transaction.PaymentTxn(
             sender=address,
