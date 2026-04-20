@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import json
 import os
 import traceback
-
+from algosdk.account import address_from_private_key
 load_dotenv()
 
 ERROR_LOG = "yourplace_errors.log"
@@ -12,7 +12,7 @@ POST_NOTE_PREFIX = "yp/1/p:"
 
 private_key = os.getenv("YOURPLACE_ALGO_PRIVATE_KEY")
 assert private_key is not None, "YOURPLACE_ALGO_PRIVATE_KEY not set in .env"
-
+address: str = address_from_private_key(private_key)
 
 def get_algorand_client() -> AlgorandClient:
     node_port = os.getenv("PORT")
@@ -42,7 +42,7 @@ def submit_note_transaction(note: str):
         return None
 
     algorand = get_algorand_client()
-    account = SigningAccount(private_key)
+    account = SigningAccount(address=address, private_key=private_key)
     algorand.set_signer_from_account(account)
     result = algorand.send.payment(
         PaymentParams(
