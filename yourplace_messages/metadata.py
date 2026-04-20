@@ -10,6 +10,8 @@ ERROR_LOG = "yourplace_errors.log"
 def create_and_submit_txn(note: str):
     try:
         tx_id = submit_note_transaction(note)
+        if tx_id is None:
+            return None
         print(f"YourPlace txn submitted: {tx_id}")
         return tx_id
     except Exception as e:

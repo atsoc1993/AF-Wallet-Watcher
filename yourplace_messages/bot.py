@@ -38,7 +38,8 @@ def get_algorand_client() -> AlgorandClient:
 def submit_note_transaction(note: str):
     note_bytes = note.encode("utf-8")
     if len(note_bytes) > MAX_NOTE_BYTES:
-        raise ValueError(f"Note exceeds {MAX_NOTE_BYTES} bytes")
+        print(f"YourPlace note exceeds {MAX_NOTE_BYTES} bytes; skipping submission")
+        return None
 
     algorand = get_algorand_client()
     account = SigningAccount(private_key)
@@ -79,6 +80,8 @@ def build_post_note(message: str) -> str:
 def send_yourplace_post(message: str):
     try:
         tx_id = submit_note_transaction(build_post_note(message))
+        if tx_id is None:
+            return None
         print(f"YourPlace txn submitted: {tx_id}")
         return tx_id
     except Exception as e:
