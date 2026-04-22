@@ -121,7 +121,7 @@ def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
             proposal_text += f"Proposal #{app_id}\n"
             proposal_text += f"{proposal['title']}\n"
             proposal_text += f"Requesting {(requested_amount / 1_000_000):,.0f} Algo\n"
-            if current_time < vote_time_remaining and proposal['vote-opening-timestamp'] != 0:
+            if current_time < vote_end_time and proposal['vote-opening-timestamp'] != 0:
                 proposal_text += f"{timer_emoji}Voting Ends In: {voting_days}d {voting_hours}h {voting_minutes}m\n"
                 proposal_text += f"{total_members - voted_members} xGovs have not voted {facepalm}\n"
                 proposal_text += f"Voter Threshold: {voter_threshold_percent:,.2f}% {voter_threshold_emoji}\n"
