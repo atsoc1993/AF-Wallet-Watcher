@@ -386,7 +386,7 @@ def balance_summary_tweet(algorand: AlgorandClient):
             online_string = f'Online: Yes'
 
         # Let's not affect any global value changes in total Algo or other metrics for accuracy, but not include arbitrary info in the tweet
-        if algo_balance < 10_000_000:
+        if algo_balance < 10:
             wallets_not_included_due_to_low_balance += 1
             continue
         else:
