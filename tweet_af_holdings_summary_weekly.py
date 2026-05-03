@@ -345,9 +345,7 @@ def balance_summary_tweet(algorand: AlgorandClient):
     wallets_not_included_due_to_low_balance = 0
     balances_text = ""
     for algo_balance, dollar_value, label, online, incentives in balances:
-        if algo_balance < 10_000_000:
-            wallets_not_included_due_to_low_balance += 1
-            continue
+
         incentives_string = ''
         online_string = ''
 
@@ -386,7 +384,13 @@ def balance_summary_tweet(algorand: AlgorandClient):
             incentives_string = f'\nOpted Into Incentives: Yes\nRewards Earned (last 7 days): {(rewards_earned / decimals_scale):,.2f}A | ${((rewards_earned / decimals_scale)* algorand_price):,.2f}'
         if online:
             online_string = f'Online: Yes'
-        balances_text += f"{label} \nValue: {algo_balance:,.2f}A | ${dollar_value:,.2f}\n{online_string}{incentives_string}\n\n"
+
+        # Let's not affect any global value changes in total Algo or other metrics for accuracy, but not include arbitrary info in the tweet
+        if algo_balance < 10_000_000:
+            wallets_not_included_due_to_low_balance += 1
+            continue
+        else:
+            balances_text += f"{label} \nValue: {algo_balance:,.2f}A | ${dollar_value:,.2f}\n{online_string}{incentives_string}\n\n"
 
     total_value_text = (
         f"Foundation Wallet Weekly Summary: \n\n"
