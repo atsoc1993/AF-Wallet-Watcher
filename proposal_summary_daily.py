@@ -109,7 +109,7 @@ def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
 
             voter_threshold_percent = (voted_members / voter_quorum) * 100 if voter_quorum else 0
             vote_threshold_percent = (total_votes / vote_quorum) * 100 if vote_quorum else 0
-            approval_percent = (approvals / approvals + rejections) * 100 if total_votes else 0
+            approval_percent = (approvals / (approvals + rejections)) * 100 if total_votes else 0
 
             voter_threshold_emoji = threshold_emoji(voter_threshold_percent, 100)
             vote_threshold_emoji = threshold_emoji(vote_threshold_percent, 100)
