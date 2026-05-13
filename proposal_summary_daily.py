@@ -72,7 +72,7 @@ def create_proposal_object(globals_: dict[str, Any]) -> dict:
     }
 
 def threshold_emoji(percent: float, threshold: float) -> str:
-    return "✅" if percent > threshold else "❌"
+    return "✅" if percent >= threshold else "❌"
 
 def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
     proposal_text = ""
