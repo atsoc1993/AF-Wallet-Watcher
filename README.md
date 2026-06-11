@@ -15,25 +15,6 @@ License: MIT
 
 The Proposal Watcher monitors the xGov registry, detects new proposal applications, formats proposal data into readable public summaries, and posts proposal updates through @AFWalletWatcher.
 
-From March 20, 2026 through June 11, 2026, strict proposal cron posts generated:
-
-| Metric | Total |
-| --- | ---: |
-| Proposal post count | 69 |
-| Likes | 333 |
-| Views | 12,339 |
-| Reposts | 63 |
-
-Breakdown:
-
-| Post Type | Posts | Likes | Views | Reposts |
-| --- | ---: | ---: | ---: | ---: |
-| Active proposal summaries | 50 | 284 | 10,057 | 53 |
-| New proposal posts | 18 | 47 | 2,172 | 10 |
-| Vote snapshot | 1 | 2 | 110 | 0 |
-
-Strict proposal cron posts counted `ACTIVE PROPOSALS...` summaries, `====NEW PROPOSAL====`, `==== New Proposal Live for Voting ====`, and one early `Proposal #:` vote snapshot. No proposal cron posts were found from February 1, 2026 through March 19, 2026.
-
 The 30,000 Algo grant request for the daily Proposal Watcher & Proposal Summary is drafted in [PROPOSAL_DAILY_PROPOSAL_WATCHER_SUMMARY.md](PROPOSAL_DAILY_PROPOSAL_WATCHER_SUMMARY.md).
 
 ## Original Summary
