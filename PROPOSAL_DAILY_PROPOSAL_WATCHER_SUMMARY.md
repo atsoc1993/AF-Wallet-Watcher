@@ -34,35 +34,13 @@ Open-sourced: Yes
 - Algorand mainnet reads through a self-hosted Algorand node
 - Public metrics tracking through proposal-related posts.
 
-## Adoption Metrics
+## Adoption Metrics (Enhancement Live since 03/20/2026)
 
+- Proposal post count 72
+- Likes: 345
+- Views: 12,937
+- Reposts: 65
 
-Totals:
-
-| Metric | Total |
-| --- | ---: |
-| Proposal post count | 69 |
-| Likes | 333 |
-| Views | 12,339 |
-| Reposts | 63 |
-
-Breakdown:
-
-| Post Type | Posts | Likes | Views | Reposts |
-| --- | ---: | ---: | ---: | ---: |
-| Active proposal summaries | 50 | 284 | 10,057 | 53 |
-| New proposal posts | 18 | 47 | 2,172 | 10 |
-| Vote snapshot | 1 | 2 | 110 | 0 |
-
-First proposal post found: 
-
-No proposal cron posts were found from February 1, 2026 through March 19, 2026.
-
-There were also 3 additional meta/service posts mentioning proposals. Including those posts would bring the broader proposal-related total to 72 posts, 345 likes, 12,937 views, and 65 reposts, but they are excluded from the strict cron/proposal-content total above.
-
-Row-level data was exported to:
-
-`afwalletwatcher_proposal_posts_2026-02-01_to_2026-06-11.csv`
 
 ## Funding Request
 
@@ -70,8 +48,8 @@ The request is 30,000 Algo to support continued operation, maintenance, and publ
 
 Funds will support:
 
-- Hosting and node infrastructure for reliable monitoring.
-- X API access and posting infrastructure.
+- Hosting costs for our scripts & node for reliable monitoring.
+- X API credits.
 - Maintenance of proposal parsing, formatting, and error handling.
 - Continued public reporting through @AFWalletWatcher.
 - Documentation and open-source upkeep.
