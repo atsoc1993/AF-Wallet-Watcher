@@ -6,7 +6,7 @@ Ask: 30,000 Algo
 
 ## Value Proposition
 
-_Live since March 20, 2026._
+_Enhancement Live since March 20, 2026_
 
 - Live Algorand governance proposal monitoring for the xGov ecosystem, posted publicly through @AFWalletWatcher X account.
 - Automated new-proposal alerts when proposals are created.
@@ -16,7 +16,7 @@ _Live since March 20, 2026._
 
 ## What Is AF Wallet Watcher's Proposal Enhancement?
 
-AF Wallet Watcher started as a transparency service for officially labeled Algorand Foundation wallets. The project monitors on-chain activity and publishes concise X posts so the broader Algorand community can see important activity without manually crawling explorer pages.
+AF Wallet Watcher started as a transparency service for officially labeled Algorand Foundation wallets. The project monitors on-chain activity and publishes concise X posts so the broader Algorand community can see important activity without manually crawling explorer pages or word-of-mouth.
 
 The daily Proposal Watcher & Proposal Summary extends that same transparency workflow to xGov proposals. It monitors the xGov registry, detects new proposal applications, formats proposal data into readable public summaries, and posts proposal updates from @AFWalletWatcher.
 
