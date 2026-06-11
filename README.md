@@ -15,8 +15,6 @@ License: MIT
 
 The Proposal Watcher monitors the xGov registry, detects new proposal applications, formats proposal data into readable public summaries, and posts proposal updates through @AFWalletWatcher.
 
-The 30,000 Algo grant request for the daily Proposal Watcher & Proposal Summary is drafted in [PROPOSAL_DAILY_PROPOSAL_WATCHER_SUMMARY.md](PROPOSAL_DAILY_PROPOSAL_WATCHER_SUMMARY.md).
-
 ## Original Summary
 
 The two files included, `tweet_on_activity.py` and `tweet_af_holdings_summary.py`, contain the logic necessary to, respectively:
