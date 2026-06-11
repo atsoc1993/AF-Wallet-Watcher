@@ -152,7 +152,7 @@ def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
 def create_tweet_content(algorand: AlgorandClient) -> str:
     created_applications: list[dict[Any, Any]] = algorand.account.get_information(XGOV_APP_ADDRESS).created_apps
     proposals: dict[int, dict[Any, Any]] = {}
-    tweet_text = "ACTIVE PROPOSALS DAILY SUMMARY:\n\n"
+    tweet_text = "ACTIVE PROPOSALS SUMMARY (Every Other Day):\n\n"
 
     for app in created_applications:
         app_id = app['id']
@@ -221,4 +221,4 @@ while True:
     except Exception as e:
         print(e)
 
-    sleep(86_400)
+    sleep(172_800)
