@@ -31,14 +31,11 @@ Open-sourced: Yes
 - Active proposal summaries for proposals currently live for voting.
 - Vote status snapshots including proposal IDs and readable proposal metadata.
 - X API posting through OAuth 1.0a.
-- Algorand mainnet reads through an Algorand node / Algokit client configuration.
-- Public metrics tracking for proposal-related posts.
+- Algorand mainnet reads through a self-hosted Algorand node
+- Public metrics tracking through proposal-related posts.
 
 ## Adoption Metrics
 
-The following metrics were collected from @AFWalletWatcher non-reply, non-retweet posts using the X API for February 1, 2026 through June 11, 2026.
-
-Strict proposal cron posts counted:
 
 Totals:
 
