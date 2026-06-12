@@ -15,6 +15,87 @@ License: MIT
 
 The Proposal Watcher monitors the xGov registry, detects new proposal applications, formats proposal data into readable public summaries, and posts proposal updates through @AFWalletWatcher.
 
+### `proposal_watcher.py`: New Proposal Detection
+
+`proposal_watcher.py` watches the xGov registry application:
+
+```python
+XGOV_REGISTRY_APP_ID: int = 3147789458
+XGOV_APP_ADDRESS = get_application_address(XGOV_REGISTRY_APP_ID)
+```
+
+The script reads the applications created by the xGov registry account and keeps an in-memory set of proposal app IDs it has already seen. On the first run, it records the current app IDs so old proposals are not reposted. After that, it polls every 180 seconds and compares the latest created app IDs against the stored set.
+
+When a new proposal app is detected, the script extracts relevant global state from the proposal application, including:
+
+- `title`
+- `proposer`
+- `vote_opening_timestamp`
+- `voting_duration`
+- `approvals`
+- `rejections`
+- `nulls`
+- `voted_members`
+- `assigned_members`
+- `weighted_quorum_threshold`
+- `quorum_threshold`
+
+The proposer bytes are converted into an Algorand address, the title is decoded from base64, and the script formats a short new-proposal post containing the proposal ID, title, proposer, and xGov voting link:
+
+```text
+====NEW PROPOSAL====
+
+Proposal #<app_id>
+<proposal title>
+Created by <proposer address>
+https://xgov.algorand.co/proposal/<app_id>
+```
+
+The post is then published to YourPlace and X. X posting uses OAuth 1.0a credentials from `.env` and sends the payload to `https://api.x.com/2/tweets`.
+
+### `proposal_summary_daily.py`: Active Proposal Summary
+
+`proposal_summary_daily.py` builds the recurring active proposal digest. It reads all proposal apps created by the xGov registry account, extracts each proposal's global state, and formats every proposal that is still in discussion or active voting.
+
+The summary uses proposal-level timestamps to determine whether the proposal is in discussion, awaiting voting, or live for voting:
+
+- Discussion timing comes from `open_timestamp` plus `discussion_duration`.
+- Voting timing comes from `vote_opening_timestamp` plus `voting_duration`.
+- Finalized proposals are skipped.
+- Proposals whose discussion ended more than 30 days ago without voting opening are skipped.
+
+For voting proposals, the summary calculates and displays:
+
+- Time remaining until voting closes.
+- Number of xGovs who have not voted.
+- Voter threshold progress from `voted_members / quorum_threshold`.
+- Vote threshold progress from total votes over `weighted_quorum_threshold`.
+- Approval percentage from approvals over approvals plus rejections.
+- Yes, no, and null vote totals.
+- Total weighted votes cast against the weighted quorum threshold.
+
+For proposals still in discussion, the summary displays the time remaining until discussion closes. The script also reads proposal box metadata, using box `M` when present, to include the forum discussion link. Every proposal summary includes the xGov voting page:
+
+```text
+https://xgov.algorand.co/proposal/<app_id>
+```
+
+The digest is sorted by the nearest relevant deadline so proposals ending soonest appear first. It is currently labeled:
+
+```text
+ACTIVE PROPOSALS SUMMARY (Every Other Day):
+```
+
+After formatting, the script posts the summary to YourPlace and X, then sleeps for 172,800 seconds.
+
+Both proposal scripts prefer the configured local Algorand node:
+
+```python
+AlgoClientNetworkConfig(server="http://localhost", port=NODE_PORT, token=NODE_TOKEN)
+```
+
+If the local node client cannot be initialized successfully, the scripts fall back to `AlgorandClient.mainnet()`.
+
 ## Original Summary
 
 The two files included, `tweet_on_activity.py` and `tweet_af_holdings_summary.py`, contain the logic necessary to, respectively:
