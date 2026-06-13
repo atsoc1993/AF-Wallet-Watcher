@@ -1,8 +1,3 @@
-from constants import (
-    YOURPLACE_ERROR_LOG,
-    YOURPLACE_MAX_NOTE_BYTES,
-    YOURPLACE_POST_NOTE_PREFIX,
-)
 from algokit_utils import AlgoAmount, AlgoClientNetworkConfig, AlgorandClient, PaymentParams, SigningAccount
 from dotenv import load_dotenv
 import json
@@ -10,6 +5,10 @@ import os
 import traceback
 from algosdk.account import address_from_private_key
 load_dotenv()
+
+ERROR_LOG = "yourplace_errors.log"
+MAX_NOTE_BYTES = 1024
+POST_NOTE_PREFIX = "yp/1/p:"
 
 private_key = os.getenv("YOURPLACE_ALGO_PRIVATE_KEY")
 assert private_key is not None, "YOURPLACE_ALGO_PRIVATE_KEY not set in .env"
@@ -38,8 +37,8 @@ def get_algorand_client() -> AlgorandClient:
 
 def submit_note_transaction(note: str):
     note_bytes = note.encode("utf-8")
-    if len(note_bytes) > YOURPLACE_MAX_NOTE_BYTES:
-        print(f"YourPlace note exceeds {YOURPLACE_MAX_NOTE_BYTES} bytes; skipping submission")
+    if len(note_bytes) > MAX_NOTE_BYTES:
+        print(f"YourPlace note exceeds {MAX_NOTE_BYTES} bytes; skipping submission")
         return None
 
     algorand = get_algorand_client()
@@ -60,17 +59,17 @@ def build_post_note(message: str) -> str:
     normalized_message = message.replace("\r\n", "\n").replace("\r", "\n").replace("\n", "<br>")
 
     def serialize(candidate: str) -> str:
-        return f'{YOURPLACE_POST_NOTE_PREFIX}{json.dumps({"p": candidate})}'
+        return f'{POST_NOTE_PREFIX}{json.dumps({"p": candidate})}'
 
     serialized_note = serialize(normalized_message)
-    if len(serialized_note.encode("utf-8")) <= YOURPLACE_MAX_NOTE_BYTES:
+    if len(serialized_note.encode("utf-8")) <= MAX_NOTE_BYTES:
         return serialized_note
 
     low, high = 0, len(normalized_message)
     while low < high:
         mid = (low + high + 1) // 2
         candidate_note = serialize(normalized_message[:mid])
-        if len(candidate_note.encode("utf-8")) <= YOURPLACE_MAX_NOTE_BYTES:
+        if len(candidate_note.encode("utf-8")) <= MAX_NOTE_BYTES:
             low = mid
         else:
             high = mid - 1
@@ -87,6 +86,6 @@ def send_yourplace_post(message: str):
         return tx_id
     except Exception as e:
         print(f"YourPlace txn failed: {e}")
-        with open(YOURPLACE_ERROR_LOG, "a") as f:
+        with open(ERROR_LOG, "a") as f:
             f.write(f"{traceback.format_exc()}\n")
         return None
