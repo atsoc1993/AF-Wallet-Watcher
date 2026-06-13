@@ -1,17 +1,12 @@
 from constants import (
-    ACCESS_TOKEN,
-    ACCESS_TOKEN_SECRET,
     ALGORAND_CONFIG,
     APPROVAL_PERCENT_THRESHOLD,
     COMMITTEE_MEMBERS,
-    CONSUMER_KEY,
-    CONSUMER_SECRET,
     DISCUSSION_DURATION,
     DISCUSSION_STALE_DAYS,
     FACEPALM_EMOJI,
     FINALIZED,
     FINALIZED_VALUE,
-    HTTP_CREATED,
     MICROALGOS_PER_ALGO,
     MISSING_FORUM_LINK,
     OPEN_TIMESTAMP,
@@ -25,7 +20,6 @@ from constants import (
     SECONDS_PER_DAY,
     SECONDS_PER_HOUR,
     SECONDS_PER_MINUTE,
-    SOCIAL_POST_FOOTER,
     THRESHOLD_MET_EMOJI,
     THRESHOLD_NOT_MET_EMOJI,
     TIMER_EMOJI,
@@ -42,14 +36,13 @@ from constants import (
     XGOV_APP_ADDRESS,
     XGOV_PROPOSAL_URL,
 )
-from requests_oauthlib import OAuth1Session
 from requests import get
 from algokit_utils import AlgorandClient
 from base64 import b64decode
 from algosdk.encoding import encode_address
 from time import time, sleep
 from typing import Any
-from yourplace_messages.bot import send_yourplace_post
+from tweet_helper import publish_tweet
 import json
 
 def get_global_value(globals_: dict, key: str, value_type: str):
@@ -196,22 +189,6 @@ def create_tweet_content(algorand: AlgorandClient) -> str:
 
     return tweet_text
 
-def test_tweet(tweet_text: str):
-    tweet_text = f"{tweet_text}{SOCIAL_POST_FOOTER}"
-    send_yourplace_post(tweet_text)
-    payload = {"text": tweet_text}
-    oauth   = OAuth1Session(
-        CONSUMER_KEY,
-        client_secret=CONSUMER_SECRET,
-        resource_owner_key=ACCESS_TOKEN,
-        resource_owner_secret=ACCESS_TOKEN_SECRET,
-    )
-    resp = oauth.post(X_API_URL, json=payload)
-    if resp.status_code != HTTP_CREATED:
-        raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
-
-    print("Tweeted:", tweet_text)
-
 # def get_nfds(addresses: list[str]) -> list[str]:
 #     base_nfd_v2_address_url = 'https://api.nf.domains/nfd/v2/address'
 #     for address in addresses:
@@ -230,7 +207,7 @@ while True:
             algorand = AlgorandClient.mainnet()
         tweet_text = create_tweet_content(algorand=algorand)
 
-        test_tweet(tweet_text)  
+        publish_tweet(tweet_text, X_API_URL)
     except Exception as e:
         print(e)
 

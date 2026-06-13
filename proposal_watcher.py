@@ -1,15 +1,9 @@
 from constants import (
-    ACCESS_TOKEN,
-    ACCESS_TOKEN_SECRET,
     ALGORAND_CONFIG,
     ASSIGNED_MEMBERS,
-    CONSUMER_KEY,
-    CONSUMER_SECRET,
-    HTTP_CREATED,
     PROPOSAL_WATCH_INTERVAL_SECONDS,
     PROPOSER,
     QUROUM_THRESHOLD,
-    SOCIAL_POST_FOOTER,
     VOTE_APPROVALS,
     VOTE_DURATION,
     VOTE_NULLS,
@@ -22,13 +16,12 @@ from constants import (
     XGOV_APP_ADDRESS,
     XGOV_PROPOSAL_URL,
 )
-from requests_oauthlib import OAuth1Session
 from algokit_utils import AlgorandClient
 from base64 import b64decode
 from time import sleep
 from typing import Any
 from algosdk.encoding import encode_address
-from yourplace_messages.bot import send_yourplace_post
+from tweet_helper import publish_tweet
 
 def get_global_value(globals_: list[dict[str, Any]], key: str, value_type: str):
     return next((item["value"][value_type] for item in globals_ if item["key"] == key), None)
@@ -69,23 +62,6 @@ def create_tweet_content(app: dict[str, Any]) -> str:
     return get_proposals_tweet_text(app_id, proposal_object)
 
 
-def tweet_new_proposal(tweet_text: str):
-    tweet_text = f"{tweet_text}{SOCIAL_POST_FOOTER}"
-    send_yourplace_post(tweet_text)
-    payload = {"text": tweet_text}
-    oauth = OAuth1Session(
-        CONSUMER_KEY,
-        client_secret=CONSUMER_SECRET,
-        resource_owner_key=ACCESS_TOKEN,
-        resource_owner_secret=ACCESS_TOKEN_SECRET,
-    )
-    resp = oauth.post(X_API_URL, json=payload)
-    if resp.status_code != HTTP_CREATED:
-        raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
-
-    print("Tweeted:", tweet_text)
-
-
 seen_app_ids: set[int] = set()
 initial_run = True
 
@@ -112,9 +88,10 @@ while True:
                     tweet_text = create_tweet_content(app)
 
                     if tweet_text:
-                        tweet_new_proposal(tweet_text)
+                        publish_tweet(tweet_text, X_API_URL)
 
                 seen_app_ids = current_ids
+                
     except Exception as e:
         print(e)
 

@@ -1,13 +1,8 @@
 from constants import (
-    ACCESS_TOKEN,
-    ACCESS_TOKEN_SECRET,
     ALGO_ASSET_ID,
     ALGORAND_CONFIG,
-    CONSUMER_KEY,
-    CONSUMER_SECRET,
     FEE_SINK_ADDRESS,
     FOUNDATION_MARKET_WALLETS,
-    HTTP_CREATED,
     INDEXER_PAGE_LIMIT,
     MICROALGOS_PER_ALGO,
     MIN_WEEKLY_WALLET_BALANCE_ALGO,
@@ -15,7 +10,6 @@ from constants import (
     POOL_ASSET_2_ID_SLICE,
     POOL_LOGICSIG_TEMPLATE,
     POOL_VALIDATOR_APP_ID_SLICE,
-    SOCIAL_POST_FOOTER,
     TINYMAN_ROUTER_APP_ID,
     TWITTER_API_URL,
     UINT64_BYTE_LENGTH,
@@ -23,11 +17,10 @@ from constants import (
     WEEKLY_ROUND_TIME_WINDOW,
     WEEKLY_SUMMARY_INTERVAL_SECONDS,
 )
-from requests_oauthlib import OAuth1Session
 from algokit_utils import AlgorandClient
 from algosdk.transaction import LogicSigAccount
 from base64 import b64decode
-from yourplace_messages.bot import send_yourplace_post
+from tweet_helper import publish_tweet
 import time
 
 
@@ -157,21 +150,7 @@ def balance_summary_tweet(algorand: AlgorandClient):
         f"{MIN_WEEKLY_WALLET_BALANCE_ALGO} Algo balance\n\n"
     )
     tweet_text = total_value_text + balances_text
-    tweet_text = f"{tweet_text}{SOCIAL_POST_FOOTER}"
-    send_yourplace_post(tweet_text)
-    payload = {"text": tweet_text}
-
-    oauth   = OAuth1Session(
-        CONSUMER_KEY,
-        client_secret=CONSUMER_SECRET,
-        resource_owner_key=ACCESS_TOKEN,
-        resource_owner_secret=ACCESS_TOKEN_SECRET,
-    )
-    resp = oauth.post(TWITTER_API_URL, json=payload)
-    if resp.status_code != HTTP_CREATED:
-        raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
-
-    print("Tweeted:", tweet_text)
+    publish_tweet(tweet_text, TWITTER_API_URL)
 
 
 while True:

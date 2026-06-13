@@ -1,6 +1,4 @@
 from constants import (
-    ACCESS_TOKEN,
-    ACCESS_TOKEN_SECRET,
     ACTIVITY_POLL_INTERVAL_SECONDS,
     ALGO_ASSET_ID,
     ALGO_DECIMALS,
@@ -8,25 +6,20 @@ from constants import (
     ALPHA_ARCADE_ADDRESS,
     ALGORAND_CONFIG,
     ASSET_TRANSFER_TRANSACTION_TYPE,
-    CONSUMER_KEY,
-    CONSUMER_SECRET,
     DEFLY_DROPS_ASSET_ID,
     DECIMAL_BASE,
     FOUNDATION_MARKET_WALLETS,
-    HTTP_CREATED,
     KEY_REGISTRATION_TRANSACTION_TYPE,
     MARKET_OPERATIONS_LABEL_FRAGMENT,
     MICROALGOS_PER_ALGO,
     MIN_TRACKED_PAYMENT_MICROALGOS,
     PAYMENT_TRANSACTION_TYPE,
     PERA_TRANSACTION_URL,
-    SOCIAL_POST_FOOTER,
     TWITTER_API_URL,
 )
-from requests_oauthlib import OAuth1Session
 from algokit_utils import AlgorandClient
 from typing import cast, Any
-from yourplace_messages.bot import send_yourplace_post
+from tweet_helper import publish_tweet
 from time import sleep
 
 
@@ -102,22 +95,12 @@ def tweet(
         f"{tweet_text}\nPera Link:\n"
         f"{PERA_TRANSACTION_URL.format(tx_id=tx_id)}"
     )
-    tweet_text = f"{tweet_text}\n\n{SOCIAL_POST_FOOTER}"
-
-    payload = {"text": tweet_text}
-
-    oauth   = OAuth1Session(
-        CONSUMER_KEY,
-        client_secret=CONSUMER_SECRET,
-        resource_owner_key=ACCESS_TOKEN,
-        resource_owner_secret=ACCESS_TOKEN_SECRET,
+    publish_tweet(
+        tweet_text,
+        TWITTER_API_URL,
+        footer_separator="\n\n",
+        yourplace_first=False,
     )
-    resp = oauth.post(TWITTER_API_URL, json=payload)
-    if resp.status_code != HTTP_CREATED:
-        raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
-
-    print("Tweeted:", tweet_text)
-    send_yourplace_post(tweet_text)
     sleep(ACTIVITY_POLL_INTERVAL_SECONDS)
 
 previous_round = 0
