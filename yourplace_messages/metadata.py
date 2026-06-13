@@ -1,11 +1,10 @@
+from constants import YOURPLACE_ERROR_LOG
 from dotenv import load_dotenv
 from yourplace_messages.bot import submit_note_transaction
 import json
 import traceback
 
 load_dotenv()
-
-ERROR_LOG = "yourplace_errors.log"
 
 def create_and_submit_txn(note: str):
     try:
@@ -16,7 +15,7 @@ def create_and_submit_txn(note: str):
         return tx_id
     except Exception as e:
         print(f"YourPlace txn failed: {e}")
-        with open(ERROR_LOG, "a") as f:
+        with open(YOURPLACE_ERROR_LOG, "a") as f:
             f.write(f"{traceback.format_exc()}\n")
         return None
 

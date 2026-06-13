@@ -1,50 +1,56 @@
+from constants import (
+    ACCESS_TOKEN,
+    ACCESS_TOKEN_SECRET,
+    ALGORAND_CONFIG,
+    APPROVAL_PERCENT_THRESHOLD,
+    COMMITTEE_MEMBERS,
+    CONSUMER_KEY,
+    CONSUMER_SECRET,
+    DISCUSSION_DURATION,
+    DISCUSSION_STALE_DAYS,
+    FACEPALM_EMOJI,
+    FINALIZED,
+    FINALIZED_VALUE,
+    HTTP_CREATED,
+    MICROALGOS_PER_ALGO,
+    MISSING_FORUM_LINK,
+    OPEN_TIMESTAMP,
+    PERCENT_MULTIPLIER,
+    PROPOSAL_METADATA_BOX_NAME,
+    PROPOSAL_SUMMARY_INTERVAL_SECONDS,
+    PROPOSER,
+    QUORUM_PERCENT_THRESHOLD,
+    QUROUM_THRESHOLD,
+    REQUESTED_AMOUNT,
+    SECONDS_PER_DAY,
+    SECONDS_PER_HOUR,
+    SECONDS_PER_MINUTE,
+    SOCIAL_POST_FOOTER,
+    THRESHOLD_MET_EMOJI,
+    THRESHOLD_NOT_MET_EMOJI,
+    TIMER_EMOJI,
+    VOTE_APPROVALS,
+    VOTE_DURATION,
+    VOTE_NULLS,
+    VOTE_OPENING_TIMESTAMP,
+    VOTE_REJECTIONS,
+    VOTE_TITLE,
+    VOTE_TIMER_WARNING_DAYS,
+    VOTED_MEMBERS,
+    WEIGHTED_QUROUM_THRESHOLD,
+    X_API_URL,
+    XGOV_APP_ADDRESS,
+    XGOV_PROPOSAL_URL,
+)
 from requests_oauthlib import OAuth1Session
 from requests import get
-from algokit_utils import AlgorandClient, AlgoClientConfigs, AlgoClientNetworkConfig
-from base64 import b64encode, b64decode
-from algosdk.logic import get_application_address
+from algokit_utils import AlgorandClient
+from base64 import b64decode
 from algosdk.encoding import encode_address
 from time import time, sleep
 from typing import Any
 from yourplace_messages.bot import send_yourplace_post
 import json
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
-CONSUMER_KEY = os.getenv("CONSUMER_KEY")
-CONSUMER_SECRET = os.getenv("CONSUMER_SECRET")
-ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
-ACCESS_TOKEN_SECRET = os.getenv("ACCESS_SECRET")
-
-NODE_TOKEN = os.getenv('ALGOD_TOKEN')
-NODE_PORT = os.getenv('PORT')
-
-CONFIG = AlgoClientConfigs(
-    algod_config=AlgoClientNetworkConfig(server='http://localhost', port=NODE_PORT, token=NODE_TOKEN),
-    indexer_config=None,
-    kmd_config=None,
-)
-
-XGOV_REGISTRY_APP_ID: int = 3147789458
-XGOV_APP_ADDRESS = get_application_address(XGOV_REGISTRY_APP_ID)
-
-VOTE_OPENING_TIMESTAMP = b64encode(b'vote_opening_timestamp').decode()
-VOTE_DURATION = b64encode(b'voting_duration').decode()
-VOTE_TITLE = b64encode(b'title').decode()
-VOTE_APPROVALS = b64encode(b'approvals').decode()
-VOTE_REJECTIONS = b64encode(b'rejections').decode()
-VOTE_NULLS = b64encode(b'nulls').decode()
-VOTED_MEMBERS = b64encode(b'voted_members').decode()
-COMMITTEE_MEMBERS = b64encode(b'committee_members').decode()
-WEIGHTED_QUROUM_THRESHOLD = b64encode(b'weighted_quorum_threshold').decode()
-QUROUM_THRESHOLD = b64encode(b'quorum_threshold').decode()
-PROPOSER = b64encode(b'proposer').decode()
-REQUESTED_AMOUNT = b64encode(b'requested_amount').decode()
-OPEN_TIMESTAMP = b64encode(b'open_timestamp').decode()
-DISCUSSION_DURATION = b64encode(b'discussion_duration').decode()
-FINALIZED = b64encode(b'finalized').decode()
 
 def get_global_value(globals_: dict, key: str, value_type: str):
     return next((item['value'][value_type] for item in globals_ if item['key'] == key), 0)
@@ -72,7 +78,7 @@ def create_proposal_object(globals_: dict[str, Any]) -> dict:
     }
 
 def threshold_emoji(percent: float, threshold: float) -> str:
-    return "✅" if percent >= threshold else "❌"
+    return THRESHOLD_MET_EMOJI if percent >= threshold else THRESHOLD_NOT_MET_EMOJI
 
 def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
     proposal_text = ""
@@ -81,19 +87,19 @@ def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
     vote_end_time = proposal['vote-opening-timestamp'] + proposal['vote-duration']
     discussion_end_time = proposal['open-timestamp'] + proposal['discussion-duration']
     if current_time < vote_end_time or proposal['vote-opening-timestamp'] == 0:
-        if proposal['finalized'] != 1:
+        if proposal['finalized'] != FINALIZED_VALUE:
             
             vote_time_remaining = vote_end_time - current_time
-            voting_days = int(vote_time_remaining // 86400)
-            voting_hours = int((vote_time_remaining % 86400) // 3600)
-            voting_minutes = int((vote_time_remaining % 3600) // 60)
+            voting_days = int(vote_time_remaining // SECONDS_PER_DAY)
+            voting_hours = int((vote_time_remaining % SECONDS_PER_DAY) // SECONDS_PER_HOUR)
+            voting_minutes = int((vote_time_remaining % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE)
 
             discussion_time_remaining = discussion_end_time - current_time
-            discussion_days = int(discussion_time_remaining // 86400)
-            discussion_hours = int((discussion_time_remaining % 86400) // 3600)
-            discussion_minutes = int((discussion_time_remaining % 3600) // 60)
+            discussion_days = int(discussion_time_remaining // SECONDS_PER_DAY)
+            discussion_hours = int((discussion_time_remaining % SECONDS_PER_DAY) // SECONDS_PER_HOUR)
+            discussion_minutes = int((discussion_time_remaining % SECONDS_PER_HOUR) // SECONDS_PER_MINUTE)
 
-            if proposal['vote-opening-timestamp'] == 0 and discussion_days < -30:
+            if proposal['vote-opening-timestamp'] == 0 and discussion_days < -DISCUSSION_STALE_DAYS:
                 return ""
 
             requested_amount = proposal['requested-amount']
@@ -107,20 +113,24 @@ def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
             total_members = proposal['committee-members']
             total_votes = approvals + rejections + nulls
 
-            voter_threshold_percent = (voted_members / voter_quorum) * 100 if voter_quorum else 0
-            vote_threshold_percent = (total_votes / vote_quorum) * 100 if vote_quorum else 0
-            approval_percent = (approvals / (approvals + rejections)) * 100 if total_votes else 0
+            voter_threshold_percent = (voted_members / voter_quorum) * PERCENT_MULTIPLIER if voter_quorum else 0
+            vote_threshold_percent = (total_votes / vote_quorum) * PERCENT_MULTIPLIER if vote_quorum else 0
+            approval_percent = (approvals / (approvals + rejections)) * PERCENT_MULTIPLIER if total_votes else 0
 
-            voter_threshold_emoji = threshold_emoji(voter_threshold_percent, 100)
-            vote_threshold_emoji = threshold_emoji(vote_threshold_percent, 100)
-            approval_emoji = threshold_emoji(approval_percent, 50)
-            timer_emoji = "⏳ " if vote_time_remaining < 2 * 86400 else ""
+            voter_threshold_emoji = threshold_emoji(voter_threshold_percent, QUORUM_PERCENT_THRESHOLD)
+            vote_threshold_emoji = threshold_emoji(vote_threshold_percent, QUORUM_PERCENT_THRESHOLD)
+            approval_emoji = threshold_emoji(approval_percent, APPROVAL_PERCENT_THRESHOLD)
+            timer_emoji = (
+                TIMER_EMOJI
+                if vote_time_remaining < VOTE_TIMER_WARNING_DAYS * SECONDS_PER_DAY
+                else ""
+            )
             proposer_nfd = proposal.get('nfd', None)
-            facepalm = "🤦"
+            facepalm = FACEPALM_EMOJI
 
             proposal_text += f"Proposal #{app_id}\n"
             proposal_text += f"{proposal['title']}\n"
-            proposal_text += f"Requesting {(requested_amount / 1_000_000):,.0f} Algo\n"
+            proposal_text += f"Requesting {(requested_amount / MICROALGOS_PER_ALGO):,.0f} Algo\n"
             if current_time < vote_end_time and proposal['vote-opening-timestamp'] != 0:
                 proposal_text += f"{timer_emoji}Voting Ends In: {voting_days}d {voting_hours}h {voting_minutes}m\n"
                 proposal_text += f"{total_members - voted_members} xGovs have not voted {facepalm}\n"
@@ -136,15 +146,18 @@ def get_proposals_tweet_text(app_id: int, proposal: dict) -> str:
                 else:
                     proposal_text += f"{timer_emoji}Discussion Ends In: {discussion_days}d {discussion_hours}h {discussion_minutes}m\n"
             proposal_app_boxes = algorand.app.get_box_names(app_id)
-            forum_link = 'Forum Link Not Provided in Proposal'
+            forum_link = MISSING_FORUM_LINK
             if len(proposal_app_boxes) > 0:
-                proposal_box_info = algorand.app.get_box_value(app_id, box_name=b'M')
+                proposal_box_info = algorand.app.get_box_value(
+                    app_id,
+                    box_name=PROPOSAL_METADATA_BOX_NAME,
+                )
                 json_proposal_box_info = json.loads(proposal_box_info)
                 if 'forumLink' in json_proposal_box_info:
                     forum_link = json_proposal_box_info['forumLink']
             proposal_text += f"Created by: {proposer_nfd if proposer_nfd else proposer}\n"
             proposal_text += f"Forum Link: {forum_link}\n"
-            proposal_text += f"Voting Link: https://xgov.algorand.co/proposal/{app_id}\n\n"
+            proposal_text += f"Voting Link: {XGOV_PROPOSAL_URL.format(app_id=app_id)}\n\n"
 
     return proposal_text
 
@@ -184,7 +197,7 @@ def create_tweet_content(algorand: AlgorandClient) -> str:
     return tweet_text
 
 def test_tweet(tweet_text: str):
-    tweet_text = tweet_text + '#Algofam #Algorand' + '\nCreated and Hosted by @atsoc93'
+    tweet_text = f"{tweet_text}{SOCIAL_POST_FOOTER}"
     send_yourplace_post(tweet_text)
     payload = {"text": tweet_text}
     oauth   = OAuth1Session(
@@ -193,8 +206,8 @@ def test_tweet(tweet_text: str):
         resource_owner_key=ACCESS_TOKEN,
         resource_owner_secret=ACCESS_TOKEN_SECRET,
     )
-    resp = oauth.post("https://api.x.com/2/tweets", json=payload)
-    if resp.status_code != 201:
+    resp = oauth.post(X_API_URL, json=payload)
+    if resp.status_code != HTTP_CREATED:
         raise RuntimeError(f"Twitter error {resp.status_code}: {resp.text}")
 
     print("Tweeted:", tweet_text)
@@ -211,7 +224,7 @@ def test_tweet(tweet_text: str):
 while True:
     try:
         try:
-            algorand = AlgorandClient(config=CONFIG)
+            algorand = AlgorandClient(config=ALGORAND_CONFIG)
             algorand.client.algod.status()
         except:
             algorand = AlgorandClient.mainnet()
@@ -221,4 +234,4 @@ while True:
     except Exception as e:
         print(e)
 
-    sleep(172_800)
+    sleep(PROPOSAL_SUMMARY_INTERVAL_SECONDS)
